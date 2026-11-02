@@ -36,10 +36,6 @@ class Settings(BaseSettings):
     provider_balance_dompul_headers: str = (
         "Authorization: Bearer {token}, apiid: {api_id}, apikey: {api_key}, language: ID"
     )
-    provider_balance_pulsa_endpoint: str = "/get-pulsa-balance"
-    provider_balance_pulsa_headers: str = (
-        "Authorization: Bearer {token}, apiid: {api_id}, apikey: {api_key}, language: ID"
-    )
     provider_history_endpoint: str = "/get-transaction-history"
     provider_history_headers: str = (
         "Authorization: Bearer {token}, apiid: {api_id}, apikey: {api_key}, language: ID"
@@ -88,8 +84,47 @@ class Settings(BaseSettings):
     )
 
     # Transaction History Detail
-    provider_history_detail_endpoint: str = "/get-transaction-historydetail"
+    provider_history_detail_endpoint: str = "/get-transaction-history-detail"
     provider_history_detail_headers: str = (
+        "Authorization: Bearer {token}, apiid: {api_id}, apikey: {api_key}, "
+        "language: ID, Content-Type: application/json"
+    )
+
+    # Digital Stock (MVP2)
+    # AWG stock
+    provider_awg_stock_endpoint: str = "/get-awg-stock"
+    provider_awg_stock_headers: str = (
+        "Authorization: Bearer {token}, apiid: {api_id}, apikey: {api_key}, language: ID"
+    )
+
+    # XWG stock (roType query param, default MINI-GROSIR)
+    provider_xwg_stock_endpoint: str = "/get-xwg-stock"
+    provider_xwg_stock_headers: str = (
+        "Authorization: Bearer {token}, apiid: {api_id}, apikey: {api_key}, "
+        "Content-Type: application/json, language: ID"
+    )
+    provider_xwg_stock_default_ro_type: str = "MINI-GROSIR"
+
+    # Stock injection
+    provider_awg_stock_inject_endpoint: str = "/post-awg-tembak"
+    provider_awg_stock_inject_headers: str = (
+        "Authorization: Bearer {token}, apiid: {api_id}, apikey: {api_key}, "
+        "Content-Type: application/json, language: ID"
+    )
+    provider_xwg_stock_inject_endpoint: str = "/post-xwg-tembak"
+    provider_xwg_stock_inject_headers: str = (
+        "Authorization: Bearer {token}, apiid: {api_id}, apikey: {api_key}, "
+        "language: ID, Content-Type: application/json"
+    )
+
+    # Stock transaction info detail (verification source for injections)
+    provider_awg_stock_info_detail_endpoint: str = "/post-awg-transaction-info-detail"
+    provider_awg_stock_info_detail_headers: str = (
+        "Authorization: Bearer {token}, apiid: {api_id}, apikey: {api_key}, "
+        "Content-Type: application/json, language: ID"
+    )
+    provider_xwg_stock_info_detail_endpoint: str = "/post-xwg-transaction-info-detail"
+    provider_xwg_stock_info_detail_headers: str = (
         "Authorization: Bearer {token}, apiid: {api_id}, apikey: {api_key}, "
         "language: ID, Content-Type: application/json"
     )

@@ -76,3 +76,12 @@
 # Swift
 # **/Tests/**/*.swift
 # **/Specs/**/*.swift
+
+# --- Application-scoped analysis exclusions (added by /understand) ---
+# Tool / assistant skill bundles and analysis data are not part of the app.
+.kilo/
+.opencode/
+.commandcode/
+.ua/
+.vscode/
+*.tsbuildinfo

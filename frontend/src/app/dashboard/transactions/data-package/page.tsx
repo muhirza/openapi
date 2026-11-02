@@ -43,17 +43,17 @@ export default function BuyDataPackagePage() {
     <DashboardShell>
       <div>
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Buy Data Package</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <h1 className="text-2xl font-bold text-ink">Buy Data Package</h1>
+          <p className="mt-1 text-sm text-ink-3">
             Select a data package from the product catalog. Status will be verified
             automatically after submission.
           </p>
         </div>
 
-        <div className="bg-white rounded-lg shadow border p-6 max-w-xl mx-auto">
+        <div className="bg-surface rounded-surface shadow border p-6 max-w-xl mx-auto">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="msisdn" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="msisdn" className="block text-sm font-medium text-ink-2">
                 MSISDN (Phone Number)
               </label>
               <input
@@ -63,23 +63,27 @@ export default function BuyDataPackagePage() {
                 onChange={(e) => setMsisdn(e.target.value)}
                 required
                 placeholder="6281234567890"
-                className="mt-1 block w-full rounded-md border border-gray-300 pl-3 pr-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500"
+                className="mt-1 block w-full rounded-control border border-line-strong pl-3 pr-3 py-2 text-sm focus:border-primary focus:ring-primary"
               />
             </div>
 
             <div>
-              <label htmlFor="product" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="product" className="block text-sm font-medium text-ink-2">
                 Product (search name, code, or brand)
               </label>
               <div className="mt-1">
-                <ProductSelect value={productCode} onChange={setProductCode} />
+                <ProductSelect
+                  value={productCode}
+                  onChange={setProductCode}
+                  excludeProductTypes={['SP Cocktail Plan', 'VD Cocktail Plan']}
+                />
               </div>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 font-medium"
+              className="w-full bg-primary text-white py-2 px-4 rounded-control hover:bg-primary-hover disabled:opacity-50 font-medium"
             >
               {loading ? 'Processing...' : 'Buy Data Package'}
             </button>
@@ -88,10 +92,10 @@ export default function BuyDataPackagePage() {
           <TransactionResultBox result={result} error={error} />
 
           {result && result.status === 'PROCESSING' && (
-            <div className="mt-4 text-xs text-gray-500">
+            <div className="mt-4 text-xs text-ink-3">
               <p>
                 Transaction is being processed. Final status will appear in{' '}
-                <a href="/dashboard/history" className="text-blue-600 underline">
+                <a href="/dashboard/history" className="text-primary underline">
                   History
                 </a>{' '}
                 — use the Refresh button there to re-check.

@@ -14,4 +14,3 @@ class BalanceResponse(BaseModel):
 class BalanceSummary(BaseModel):
     eload: Optional[BalanceResponse] = None
     dompul: Optional[BalanceResponse] = None
-    pulsa: Optional[BalanceResponse] = None

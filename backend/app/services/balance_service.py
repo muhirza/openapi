@@ -14,7 +14,6 @@ from app.services.provider_client import provider_client, ProviderAPIError
 BALANCE_API_CONFIG = {
     "eload": ("balance_eload", "balance_eload"),
     "dompul": ("balance_dompul", "balance_dompul"),
-    "pulsa": ("balance_pulsa", "balance_pulsa"),
 }
 
 
@@ -23,7 +22,7 @@ class BalanceService:
         self.db = db
 
     async def fetch_balance(self, user_id: int, balance_type: str) -> BalanceResponse:
-        """Fetch a single balance (eload | dompul | pulsa)."""
+        """Fetch a single balance (eload | dompul)."""
         if balance_type not in BALANCE_API_CONFIG:
             raise ValueError(f"Invalid balance type: {balance_type}")
 
@@ -65,9 +64,9 @@ class BalanceService:
         )
 
     async def fetch_all_balances(self, user_id: int) -> BalanceSummary:
-        """Fetch all three balances; returns per-type results (errors captured per type)."""
+        """Fetch all balances; returns per-type results (errors captured per type)."""
         summary = BalanceSummary()
-        for btype in ("eload", "dompul", "pulsa"):
+        for btype in ("eload", "dompul"):
             try:
                 resp = await self.fetch_balance(user_id, btype)
                 setattr(summary, btype, resp)

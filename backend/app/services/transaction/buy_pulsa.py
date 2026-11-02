@@ -48,6 +48,8 @@ class BuyPulsaService(TransactionServiceBase):
                 "amount": float(denom),
                 "metadata": {"denom": denom},
             },
+            endpoint=endpoint,
+            unmasked_request=req_body,
         )
         self.db.add(record)
         await self.db.commit()

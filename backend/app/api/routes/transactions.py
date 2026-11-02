@@ -1,7 +1,7 @@
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, desc
+from sqlalchemy import select, func, desc, or_
 from datetime import datetime, timezone
 
 from app.api.deps import get_current_user
@@ -13,15 +13,18 @@ from app.schemas.transaction import (
     BuyDataPackageRequest,
     CocktailSFRequest,
     PackageInjectionRequest,
+    StockInjectRequest,
     TransactionResult,
     LocalTransactionOut,
     LocalTransactionDetailOut,
     LocalTransactionListResponse,
+    LocalTransactionSummary,
 )
 from app.services.transaction.buy_pulsa import BuyPulsaService
 from app.services.transaction.buy_data_package import BuyDataPackageService
 from app.services.transaction.cocktail_sf import CocktailSFService
 from app.services.transaction.package_injection import PackageInjectionService
+from app.services.transaction.stock_inject import StockInjectService
 from app.services.pin_service import PinService, PinNotFoundError
 from app.services.token_service import TokenFetchError
 from app.services.provider_client import ProviderAPIError
@@ -144,6 +147,45 @@ async def package_injection(
     )
 
 
+@router.post("/transactions/stock-inject", response_model=TransactionResult)
+async def stock_inject(
+    payload: StockInjectRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Inject AWG/XWG stock vouchers — recorded in the digital stock history."""
+    await _require_pin(current_user.id, db)
+    svc = StockInjectService(db, family=payload.family)
+    try:
+        record = await svc.execute(
+            current_user.id,
+            targets=payload.targets,
+            voucher_id=payload.voucher_id,
+            allow_type=payload.allow_type,
+            voucher_type_code=payload.voucher_type_code,
+            description=payload.description,
+            price=payload.price,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except TokenFetchError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except ProviderAPIError as e:
+        raise HTTPException(status_code=502, detail=str(e))
+
+    total = payload.price * len(payload.targets) if payload.price is not None else None
+    return TransactionResult(
+        transaction_ref=record.master_trx_id,
+        transaction_type=svc.transaction_type,
+        status=record.status,
+        provider_reference=record.master_trx_id,
+        message="Injection submitted; verification running" if record.status == "PROCESSING" else "Transaction completed",
+        amount=total,
+        destination=record.destination_msisdn,
+        created_at=record.created_at,
+    )
+
+
 # ---------- Local Transaction History ----------
 
 @router.get("/transactions/local", response_model=LocalTransactionListResponse)
@@ -152,34 +194,77 @@ async def get_local_transactions(
     per_page: int = Query(25, ge=1, le=100),
     type: Optional[str] = Query(None),
     status: Optional[str] = Query(None),
+    source: Optional[str] = Query(None, pattern=r"^(app|synced)$"),
+    search: Optional[str] = Query(None, description="Search refs, destination, product"),
     start_date: Optional[str] = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
     end_date: Optional[str] = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Paginated local transaction history with filters."""
-    query = select(LocalTransaction).where(LocalTransaction.user_id == current_user.id)
+    """Paginated local transaction history with filters and a filtered summary."""
+    conditions = [LocalTransaction.user_id == current_user.id]
     if type:
-        query = query.where(LocalTransaction.transaction_type == type)
-    if status:
-        query = query.where(LocalTransaction.status == status)
+        conditions.append(LocalTransaction.transaction_type == type)
+    if source:
+        conditions.append(LocalTransaction.source == source)
+    if search:
+        pattern = f"%{search}%"
+        conditions.append(
+            or_(
+                LocalTransaction.transaction_ref.ilike(pattern),
+                LocalTransaction.provider_reference.ilike(pattern),
+                LocalTransaction.destination.ilike(pattern),
+                LocalTransaction.product_name.ilike(pattern),
+                LocalTransaction.product_code.ilike(pattern),
+            )
+        )
     if start_date:
         start = datetime.strptime(start_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
-        query = query.where(LocalTransaction.created_at >= start)
+        conditions.append(LocalTransaction.created_at >= start)
     if end_date:
         end = datetime.strptime(end_date, "%Y-%m-%d").replace(hour=23, minute=59, second=59, tzinfo=timezone.utc)
-        query = query.where(LocalTransaction.created_at <= end)
+        conditions.append(LocalTransaction.created_at <= end)
 
-    query = query.order_by(desc(LocalTransaction.created_at))
+    # The status filter narrows the list only. Summary counts are a "facet" of the
+    # other filters, so quick-filter counts stay accurate while one is applied.
+    facet_conditions = list(conditions)
+    if status:
+        conditions.append(LocalTransaction.status == status)
 
-    total = (await db.execute(select(func.count()).select_from(query.subquery()))).scalar_one()
+    total = (await db.execute(
+        select(func.count()).select_from(select(LocalTransaction).where(*conditions).subquery())
+    )).scalar_one()
     total_pages = max(1, (total + per_page - 1) // per_page) if total > 0 else 1
     page = max(1, min(page, total_pages))
 
     rows = await db.execute(
-        query.offset((page - 1) * per_page).limit(per_page)
+        select(LocalTransaction)
+        .where(*conditions)
+        .order_by(desc(LocalTransaction.created_at))
+        .offset((page - 1) * per_page)
+        .limit(per_page)
     )
     items = [LocalTransactionOut.model_validate(r) for r in rows.scalars().all()]
+
+    # Facet counts across the whole filtered set (excluding the status filter itself)
+    status_rows = (await db.execute(
+        select(LocalTransaction.status, func.count(LocalTransaction.id))
+        .where(*facet_conditions)
+        .group_by(LocalTransaction.status)
+    )).all()
+    success_amount = (await db.execute(
+        select(func.coalesce(func.sum(LocalTransaction.amount), 0))
+        .where(*facet_conditions, LocalTransaction.status == "SUCCESS")
+    )).scalar_one()
+
+    counts = {str(s).upper(): c for s, c in status_rows}
+    summary = LocalTransactionSummary(
+        total=sum(counts.values()),
+        success=counts.get("SUCCESS", 0),
+        failed=counts.get("FAILED", 0),
+        processing=counts.get("PROCESSING", 0),
+        success_amount=success_amount,
+    )
 
     return LocalTransactionListResponse(
         items=items,
@@ -187,6 +272,7 @@ async def get_local_transactions(
         page=page,
         per_page=per_page,
         total_pages=total_pages,
+        summary=summary,
     )
 
 

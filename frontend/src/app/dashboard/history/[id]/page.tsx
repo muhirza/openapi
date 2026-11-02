@@ -8,6 +8,23 @@ import { LocalTransactionDetail } from '../../../../types';
 import { StatusBadge } from '../../../../components/StatusBadge';
 import { formatIDR, formatDate } from '../../../../lib/format';
 
+function buildCurl(tx: LocalTransactionDetail): { curl: string; masked: boolean } {
+  const unmasked = tx.metadata_unmasked;
+  if (unmasked && unmasked.request) {
+    const endpoint = (unmasked.endpoint as string) || '<endpoint unavailable>';
+    return {
+      curl: `curl -X POST '${endpoint}' \\\n  -H 'Content-Type: application/json' \\\n  -d '${JSON.stringify(unmasked.request)}'`,
+      masked: false,
+    };
+  }
+  // Older records: only the masked body is stored
+  const maskedRequest = tx.metadata?.request ?? {};
+  return {
+    curl: `curl -X POST '<endpoint unavailable>' \\\n  -H 'Content-Type: application/json' \\\n  -d '${JSON.stringify(maskedRequest)}'`,
+    masked: true,
+  };
+}
+
 export default function LocalHistoryDetailPage() {
   const params = useParams();
   const id = params.id as string;
@@ -15,6 +32,8 @@ export default function LocalHistoryDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [refreshing, setRefreshing] = useState(false);
+  const [showUnmasked, setShowUnmasked] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -50,7 +69,7 @@ export default function LocalHistoryDetailPage() {
   if (loading && !tx) {
     return (
       <DashboardShell>
-        <div className="text-center py-8 text-gray-400">Loading...</div>
+        <div className="text-center py-8 text-ink-4">Loading...</div>
       </DashboardShell>
     );
   }
@@ -58,21 +77,36 @@ export default function LocalHistoryDetailPage() {
   if (!tx) {
     return (
       <DashboardShell>
-        <div className="text-center py-8 text-red-500">{error || 'Transaction not found'}</div>
+        <div className="text-center py-8 text-danger">{error || 'Transaction not found'}</div>
       </DashboardShell>
     );
   }
 
-  const canRefresh = ['buy_data_package', 'package_injection'].includes(tx.transaction_type) &&
-    tx.status === 'PROCESSING';
+  // Async provider flows can be re-verified at any time — including after a FAILED
+  // result, which may have been recorded before the provider finished processing.
+  const canRefresh = ['buy_data_package', 'package_injection'].includes(tx.transaction_type);
+
+  const hasUnmasked = tx.metadata_unmasked != null || tx.raw_response_unmasked != null;
+  const metadataDisplay = showUnmasked && tx.metadata_unmasked != null ? tx.metadata_unmasked : tx.metadata;
+  const rawDisplay = showUnmasked && tx.raw_response_unmasked != null ? tx.raw_response_unmasked : tx.raw_response;
+
+  const { curl, masked: curlMasked } = buildCurl(tx);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(curl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {}
+  };
 
   return (
     <DashboardShell>
       <div>
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Transaction Detail</h1>
-            <p className="mt-1 text-sm text-gray-500">
+            <h1 className="text-2xl font-bold text-ink">Transaction Detail</h1>
+            <p className="mt-1 text-sm text-ink-3">
               Ref: {tx.transaction_ref}
             </p>
           </div>
@@ -82,95 +116,169 @@ export default function LocalHistoryDetailPage() {
               <button
                 onClick={handleRefresh}
                 disabled={refreshing}
-                className="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50"
+                className="px-3 py-1.5 text-sm border border-line-strong rounded-control hover:bg-canvas disabled:opacity-50"
               >
                 {refreshing ? 'Refreshing...' : 'Refresh Status'}
               </button>
             )}
+            <button
+              type="button"
+              onClick={() => setShowUnmasked((s) => !s)}
+              aria-pressed={showUnmasked}
+              className="px-3 py-1.5 text-sm border border-line-strong rounded-control hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+            >
+              {showUnmasked ? 'Hide unmasked data' : 'Show unmasked data'}
+            </button>
           </div>
         </div>
 
         {error && (
-          <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded text-sm">
+          <div className="mb-4 bg-danger-subtle border border-danger-border text-danger-strong px-4 py-3 rounded-control text-sm">
             {error}
           </div>
         )}
 
-        <div className="bg-white rounded-lg shadow border p-6 space-y-4">
+        {showUnmasked && (
+          <div className="mb-4 bg-warning-subtle border border-warning-border text-warning-strong px-4 py-3 rounded-control text-sm">
+            {hasUnmasked ? (
+              <>
+                Unmasked view — shows the data actually sent to and received from the
+                provider. The request body contains the provider-encrypted PIN; the plaintext
+                PIN is never stored.
+              </>
+            ) : (
+              <>
+                This record was created before unmasked data capture was added, so only the
+                masked copy is available. New transactions will include the unmasked request,
+                endpoint, and response.
+              </>
+            )}
+          </div>
+        )}
+
+        <div className="bg-surface rounded-surface shadow border p-6 space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
             <div>
-              <label className="block text-xs text-gray-500">Reference</label>
-              <p className="font-mono text-sm text-gray-900">{tx.transaction_ref}</p>
+              <label className="block text-xs text-ink-3">Reference</label>
+              <p className="font-mono text-sm text-ink">{tx.transaction_ref}</p>
             </div>
             <div>
-              <label className="block text-xs text-gray-500">Provider Reference</label>
-              <p className="font-mono text-sm text-gray-900">{tx.provider_reference || '—'}</p>
+              <label className="block text-xs text-ink-3">Provider Reference</label>
+              <p className="font-mono text-sm text-ink">{tx.provider_reference || '—'}</p>
             </div>
             <div>
-              <label className="block text-xs text-gray-500">Type</label>
-              <p className="text-sm text-gray-900">{tx.transaction_type}</p>
+              <label className="block text-xs text-ink-3">Type</label>
+              <p className="text-sm text-ink">{tx.transaction_type}</p>
             </div>
             <div>
-              <label className="block text-xs text-gray-500">Product</label>
-              <p className="text-sm text-gray-900">{tx.product_name || tx.product_code || '—'}</p>
+              <label className="block text-xs text-ink-3">Product</label>
+              <p className="text-sm text-ink">{tx.product_name || tx.product_code || '—'}</p>
             </div>
             <div>
-              <label className="block text-xs text-gray-500">Product Code</label>
-              <p className="font-mono text-sm text-gray-900">{tx.product_code || '—'}</p>
+              <label className="block text-xs text-ink-3">Product Code</label>
+              <p className="font-mono text-sm text-ink">{tx.product_code || '—'}</p>
             </div>
             <div>
-              <label className="block text-xs text-gray-500">Product Type</label>
-              <p className="text-sm text-gray-900">{tx.product_type || '—'}</p>
+              <label className="block text-xs text-ink-3">Product Type</label>
+              <p className="text-sm text-ink">{tx.product_type || '—'}</p>
             </div>
             <div>
-              <label className="block text-xs text-gray-500">Destination</label>
-              <p className="text-sm text-gray-900">{tx.destination || '—'}</p>
+              <label className="block text-xs text-ink-3">Destination</label>
+              <p className="text-sm text-ink">{tx.destination || '—'}</p>
             </div>
             <div>
-              <label className="block text-xs text-gray-500">Amount</label>
-              <p className="text-sm text-gray-900">{tx.amount ? formatIDR(tx.amount) : '—'}</p>
+              <label className="block text-xs text-ink-3">Amount</label>
+              <p className="text-sm text-ink">{tx.amount ? formatIDR(tx.amount) : '—'}</p>
             </div>
             <div>
-              <label className="block text-xs text-gray-500">Status</label>
-              <p className="text-sm text-gray-900">{tx.status}</p>
+              <label className="block text-xs text-ink-3">Status</label>
+              <p className="text-sm text-ink">{tx.status}</p>
             </div>
             <div>
-              <label className="block text-xs text-gray-500">Created</label>
-              <p className="text-sm text-gray-900">{formatDate(tx.created_at)}</p>
+              <label className="block text-xs text-ink-3">Created</label>
+              <p className="text-sm text-ink">{formatDate(tx.created_at)}</p>
             </div>
             <div>
-              <label className="block text-xs text-gray-500">Request Timestamp</label>
-              <p className="text-sm text-gray-900">{formatDate(tx.request_timestamp)}</p>
+              <label className="block text-xs text-ink-3">Request Timestamp</label>
+              <p className="text-sm text-ink">{formatDate(tx.request_timestamp)}</p>
             </div>
             <div>
-              <label className="block text-xs text-gray-500">Response Timestamp</label>
-              <p className="text-sm text-gray-900">{formatDate(tx.provider_response_timestamp)}</p>
+              <label className="block text-xs text-ink-3">Response Timestamp</label>
+              <p className="text-sm text-ink">{formatDate(tx.provider_response_timestamp)}</p>
             </div>
             <div>
-              <label className="block text-xs text-gray-500">HTTP Status</label>
-              <p className="text-sm text-gray-900">{tx.http_status_code ?? '—'}</p>
+              <label className="block text-xs text-ink-3">HTTP Status</label>
+              <p className="text-sm text-ink">{tx.http_status_code ?? '—'}</p>
             </div>
             <div>
-              <label className="block text-xs text-gray-500">Error Code</label>
-              <p className="text-sm text-gray-900">{tx.error_code || '—'}</p>
+              <label className="block text-xs text-ink-3">Error Code</label>
+              <p className="text-sm text-ink">{tx.error_code || '—'}</p>
             </div>
             <div>
-              <label className="block text-xs text-gray-500">Error Message</label>
-              <p className="text-sm text-gray-900">{tx.error_message || '—'}</p>
+              <label className="block text-xs text-ink-3">Error Message</label>
+              <p className="text-sm text-ink">{tx.error_message || '—'}</p>
             </div>
           </div>
 
           <div className="border-t pt-4">
-            <h3 className="text-sm font-medium text-gray-900 mb-2">Metadata</h3>
-            <pre className="text-xs bg-gray-50 p-3 rounded overflow-auto max-h-64">
-              {JSON.stringify(tx.metadata, null, 2) || '{}'}
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-medium text-ink">
+                Metadata{" "}
+                {showUnmasked && tx.metadata_unmasked != null ? (
+                  <span className="text-warning-strong">(unmasked)</span>
+                ) : (
+                  <span className="text-ink-4">(masked)</span>
+                )}
+              </h3>
+            </div>
+            {showUnmasked && tx.metadata_unmasked == null && (
+              <p className="mb-2 text-xs text-ink-4">
+                Stored unmasked data is not available for this record (created before this feature).
+              </p>
+            )}
+            <pre className="text-xs bg-canvas p-3 rounded-control overflow-auto max-h-64">
+              {JSON.stringify(metadataDisplay, null, 2) || '{}'}
             </pre>
           </div>
 
           <div className="border-t pt-4">
-            <h3 className="text-sm font-medium text-gray-900 mb-2">Raw Provider Response (masked)</h3>
-            <pre className="text-xs bg-gray-50 p-3 rounded overflow-auto max-h-64">
-              {JSON.stringify(tx.raw_response, null, 2) || '{}'}
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-medium text-ink">cURL Request</h3>
+              <button
+                type="button"
+                onClick={handleCopy}
+                className="px-2.5 py-1 text-xs border border-line-strong rounded-control hover:bg-canvas"
+              >
+                {copied ? 'Copied' : 'Copy'}
+              </button>
+            </div>
+            <p aria-live="polite" className="sr-only">{copied ? 'cURL copied to clipboard' : ''}</p>
+            {curlMasked && (
+              <p className="mb-2 text-xs text-ink-4">
+                Stored unmasked data is not available for this record (created before this feature) — body shown masked.
+              </p>
+            )}
+            <pre className="text-xs bg-ink text-line p-3 rounded-control overflow-auto max-h-64">
+              {curl}
+            </pre>
+          </div>
+
+          <div className="border-t pt-4">
+            <h3 className="text-sm font-medium text-ink mb-2">
+              Raw Provider Response{" "}
+              {showUnmasked && tx.raw_response_unmasked != null ? (
+                <span className="text-warning-strong">(unmasked)</span>
+              ) : (
+                <span className="text-ink-4">(masked)</span>
+              )}
+            </h3>
+            {showUnmasked && tx.raw_response_unmasked == null && (
+              <p className="mb-2 text-xs text-ink-4">
+                Stored unmasked data is not available for this record (created before this feature).
+              </p>
+            )}
+            <pre className="text-xs bg-canvas p-3 rounded-control overflow-auto max-h-64">
+              {JSON.stringify(rawDisplay, null, 2) || '{}'}
             </pre>
           </div>
         </div>

@@ -67,6 +67,8 @@ class CocktailSFService(TransactionServiceBase):
                 "product_code": product_code,
                 "metadata": {"targets": targets},
             },
+            endpoint=endpoint,
+            unmasked_request=req_body,
         )
         self.db.add(record)
         await self.db.commit()

@@ -19,6 +19,8 @@ from app.models.api_token import ApiToken
 from app.models.product import Product
 from app.models.local_transaction import LocalTransaction
 from app.models.user_pin import UserPin
+from app.models.user_sync_setting import UserSyncSetting
+from app.models.stock_transaction import StockTransaction
 
 config = context.config
 

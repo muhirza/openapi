@@ -19,6 +19,13 @@ import {
   TransactionResult,
   LocalTransactionListResponse,
   LocalTransactionDetail,
+  SyncSettings,
+  SyncRunResult,
+  StockFamily,
+  StockListResponse,
+  StockInjectRequest,
+  StockHistoryListResponse,
+  StockHistoryDetail,
 } from '../types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -134,6 +141,8 @@ export const api = {
     perPage?: number;
     type?: string;
     status?: string;
+    source?: string;
+    search?: string;
     startDate?: string;
     endDate?: string;
   } = {}) => {
@@ -142,6 +151,8 @@ export const api = {
     if (opts.perPage) params.set('per_page', String(opts.perPage));
     if (opts.type) params.set('type', opts.type);
     if (opts.status) params.set('status', opts.status);
+    if (opts.source) params.set('source', opts.source);
+    if (opts.search) params.set('search', opts.search);
     if (opts.startDate) params.set('start_date', opts.startDate);
     if (opts.endDate) params.set('end_date', opts.endDate);
     const qs = params.toString();
@@ -155,6 +166,21 @@ export const api = {
 
   refreshTransaction: (id: number | string) =>
     apiRequest<TransactionResult>(`/api/transactions/local/${id}/refresh`, {
+      method: 'POST',
+    }),
+
+  // ---------- Provider history auto-sync ----------
+  getSyncSettings: () =>
+    apiRequest<SyncSettings>('/api/profile/sync-settings'),
+
+  updateSyncSettings: (payload: { enabled?: boolean; interval_minutes?: number }) =>
+    apiRequest<SyncSettings>('/api/profile/sync-settings', {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    }),
+
+  runSyncNow: () =>
+    apiRequest<SyncRunResult>('/api/profile/sync-settings/run-now', {
       method: 'POST',
     }),
 
@@ -207,4 +233,53 @@ export const api = {
 
   syncProducts: () =>
     apiRequest<SyncProductResult>('/api/products/sync', { method: 'POST' }),
+
+  // ---------- Digital Stock ----------
+  getStock: (family: StockFamily, roType?: string) => {
+    const params = new URLSearchParams();
+    if (roType) params.set('ro_type', roType);
+    const qs = params.toString();
+    return apiRequest<StockListResponse>(`/api/stock/${family}${qs ? `?${qs}` : ''}`);
+  },
+
+  stockInject: (payload: StockInjectRequest) =>
+    apiRequest<TransactionResult>('/api/transactions/stock-inject', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  // ---------- Digital Stock History ----------
+  getStockHistory: (
+    family: StockFamily,
+    opts: {
+      page?: number;
+      perPage?: number;
+      servicetype?: string;
+      status?: string;
+      search?: string;
+      startDate?: string;
+      endDate?: string;
+    } = {}
+  ) => {
+    const params = new URLSearchParams();
+    if (opts.page) params.set('page', String(opts.page));
+    if (opts.perPage) params.set('per_page', String(opts.perPage));
+    if (opts.servicetype) params.set('servicetype', opts.servicetype);
+    if (opts.status) params.set('status', opts.status);
+    if (opts.search) params.set('search', opts.search);
+    if (opts.startDate) params.set('start_date', opts.startDate);
+    if (opts.endDate) params.set('end_date', opts.endDate);
+    const qs = params.toString();
+    return apiRequest<StockHistoryListResponse>(
+      `/api/stock/${family}/history${qs ? `?${qs}` : ''}`
+    );
+  },
+
+  getStockHistoryItem: (family: StockFamily, id: number | string) =>
+    apiRequest<StockHistoryDetail>(`/api/stock/${family}/history/${id}`),
+
+  refreshStockHistoryDetail: (family: StockFamily, id: number | string) =>
+    apiRequest<StockHistoryDetail>(`/api/stock/${family}/history/${id}/refresh-detail`, {
+      method: 'POST',
+    }),
 };

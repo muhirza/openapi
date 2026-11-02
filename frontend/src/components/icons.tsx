@@ -71,6 +71,23 @@ export const IconMenu = createIcon([
   'M3 6h18',
   'M3 18h18',
 ]);
+
+// Digital stock
+export const IconLayers = createIcon([
+  'M12 2L2 7l10 5 10-5-10-5z',
+  'M2 17l10 5 10-5',
+  'M2 12l10 5 10-5',
+]);
+export const IconUpload = createIcon([
+  'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4',
+  'M17 8l-5-5-5 5',
+  'M12 3v12',
+]);
+export const IconSearch = createIcon([
+  'M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z',
+  'M21 21l-4.35-4.35',
+]);
+
 export const IconX = createIcon([
   'M18 6L6 18',
   'M6 6l12 12',
@@ -127,4 +144,35 @@ export const IconUser = createIcon([
 ]);
 export const IconChevronRight = createIcon([
   'M9 18l6-6-6-6',
+]);
+export const IconChevronDown = createIcon([
+  'M6 9l6 6 6-6',
+]);
+export const IconCheck = createIcon([
+  'M20 6L9 17l-5-5',
+]);
+
+// Security / credentials
+export const IconKey = createIcon([
+  'M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777z',
+  'M15.5 7.5l3 3L22 7l-3-3',
+]);
+export const IconLock = createIcon([
+  'M5 11h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2z',
+  'M8 11V7a4 4 0 0 1 8 0v4',
+  'M12 15v3',
+]);
+export const IconShieldCheck = createIcon([
+  'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z',
+  'M9 12l2 2 4-4',
+]);
+export const IconEye = createIcon([
+  'M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z',
+  'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
+]);
+export const IconEyeOff = createIcon([
+  'M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94',
+  'M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19',
+  'M14.12 14.12a3 3 0 1 1-4.24-4.24',
+  'M1 1l22 22',
 ]);

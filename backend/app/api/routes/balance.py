@@ -17,7 +17,7 @@ async def get_all_balances(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Fetch all three balances (eload, dompul, pulsa).
+    """Fetch all balances (eload, dompul).
 
     Errors per balance type are swallowed; each returns None if it fails.
     The summary includes an error field per type if known (via future extension).
@@ -32,7 +32,7 @@ async def get_balance(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Fetch a single balance by type (eload | dompul | pulsa)."""
+    """Fetch a single balance by type (eload | dompul)."""
     svc = BalanceService(db)
     try:
         return await svc.fetch_balance(current_user.id, balance_type)

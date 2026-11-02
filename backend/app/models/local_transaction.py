@@ -26,10 +26,17 @@ class LocalTransaction(Base):
     amount: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)
     status: Mapped[str] = mapped_column(String(50), nullable=False)
     provider_reference: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    source: Mapped[str] = mapped_column(String(20), nullable=False, server_default="app")
+    provider_transaction_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    synced_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     destination: Mapped[str | None] = mapped_column(String(50), nullable=True)
     payment_method: Mapped[str | None] = mapped_column(String(50), nullable=True)
     raw_response: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    raw_response_unmasked: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     metadata_: Mapped[dict | None] = mapped_column("metadata", JSON, nullable=True)
+    metadata_unmasked: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     request_timestamp: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )

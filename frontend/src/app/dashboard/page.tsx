@@ -11,8 +11,8 @@ export default function HomePage() {
       <div className="space-y-6">
         {/* Page header */}
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <h1 className="text-2xl font-bold text-ink">Dashboard</h1>
+          <p className="mt-1 text-sm text-ink-3">
             Overview of your balances, recent transactions, and token status.
           </p>
         </div>

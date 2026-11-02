@@ -5,7 +5,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
 from app.models.local_transaction import LocalTransaction
 from app.schemas.transaction import TransactionStatus
-from app.services.token_service import TokenService
 from app.services.provider_client import provider_client, ProviderResult
 from app.services.transaction.base import TransactionServiceBase
 
@@ -69,14 +68,16 @@ class BuyDataPackageService(TransactionServiceBase):
                 "destination": msisdn,
                 "metadata": {"product_code": product_code},
             },
+            endpoint=endpoint,
+            unmasked_request=req_body,
         )
         self.db.add(record)
         await self.db.commit()
         await self.db.refresh(record)
 
-        # 6. Run verification flow if provider reference exists
+        # 6. Verify with a short retry window (provider fulfillment is asynchronous)
         if provider_ref:
-            await self._verify_and_update(user_id, record.id, provider_ref, msisdn, token)
+            await self._verify_and_update_with_retry(user_id, record.id, provider_ref, msisdn, token)
 
         return record
 
@@ -88,57 +89,17 @@ class BuyDataPackageService(TransactionServiceBase):
         msisdn: str,
         token: str,
     ) -> None:
-        """Run Check History + Detail flow and update local record."""
-        # Use history_api credentials for the check endpoints
-        token_svc = TokenService(self.db)
-        creds = await token_svc.get_credentials_by_name(user_id, "history_api")
-        if not creds:
-            return  # silently skip if no history creds
-        api_id, api_key = await token_svc.decrypt_credentials(creds)
+        """Re-check the provider's transaction-history-detail and update the record.
 
-        # Step 1: Check History (GET /get-transaction-history) — optional, just to warm up
-        # (MVP1 history service uses same endpoint; we can skip if not needed)
-
-        # Step 2: Check History Detail (GET /get-transaction-historydetail)
-        detail_endpoint = getattr(settings, "provider_history_detail_endpoint")
-        detail_headers = getattr(settings, "provider_history_detail_headers")
-        params = {
-            "transactionId": transaction_id,
-            "msisdnB": msisdn,
-            "orderStatus": "SUCCESS",
-        }
-        detail_result = await provider_client.get_full(detail_endpoint, detail_headers, token, api_id, api_key, params)
-
-        # Update status based on detail result
-        final_status: TransactionStatus = "FAILED"
-        if detail_result.ok and isinstance(detail_result.data, list):
-            # Look for our transaction in the list
-            for item in detail_result.data:
-                if isinstance(item, dict) and item.get("transactionId") == transaction_id:
-                    status = str(item.get("status", "")).upper()
-                    if status == "SUCCESS":
-                        final_status = "SUCCESS"
-                    else:
-                        final_status = "FAILED"
-                    break
-
-        # Update local record
-        from sqlalchemy import select
-        stmt = select(LocalTransaction).where(LocalTransaction.id == local_tx_id)
-        res = await self.db.execute(stmt)
-        record = res.scalar_one_or_none()
-        if record:
-            record.status = final_status
-            # Merge raw response with detail result
-            if detail_result.raw:
-                masked_detail = {k: v for k, v in detail_result.raw.items()}
-                # We'll just add the detail list to existing raw_response
-                if record.raw_response and isinstance(record.raw_response, dict):
-                    record.raw_response["check_history_detail"] = detail_result.data
-                else:
-                    record.raw_response = {"check_history_detail": detail_result.data}
-            record.updated_at = __import__('datetime').datetime.now(__import__('datetime').timezone.utc)
-            await self.db.commit()
+        Never infers FAILED: an inconclusive response leaves the record open
+        (PROCESSING) so it can be re-checked later.
+        """
+        status, detail_row, raw = await self._verify_via_history_detail(
+            user_id, transaction_id, msisdn, token
+        )
+        if status is None and detail_row is None and raw is None:
+            return  # no usable credentials — leave the record for the re-check loop
+        await self._apply_verification(user_id, local_tx_id, status, detail_row, raw)
 
     async def refresh_status(self, user_id: int, local_tx_id: int) -> Optional[LocalTransaction]:
         """Manual refresh: re-run verification flow."""

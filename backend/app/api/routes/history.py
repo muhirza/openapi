@@ -6,6 +6,7 @@ from datetime import datetime, timedelta, timezone
 from app.api.deps import get_current_user
 from app.models.user import User
 from app.models.local_transaction import LocalTransaction
+from app.models.user_sync_setting import UserSyncSetting
 from app.db.session import get_db
 from app.schemas.history import HistoryResponse, HistoryStatus, TransactionItem
 from app.services.history_service import HistoryService
@@ -98,8 +99,11 @@ async def get_history_status(
     count = (await db.execute(
         select(func.count(LocalTransaction.id)).where(LocalTransaction.user_id == current_user.id)
     )).scalar_one()
+    sync_row = (await db.execute(
+        select(UserSyncSetting).where(UserSyncSetting.user_id == current_user.id)
+    )).scalar_one_or_none()
     return HistoryStatus(
         last_api_sync=None,
-        last_local_sync=None,
+        last_local_sync=sync_row.last_sync_at if sync_row else None,
         total_local=count,
     )

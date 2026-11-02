@@ -7,12 +7,17 @@ import { formatIDR, formatDate } from '../lib/format';
 interface TransactionResultBoxProps {
   result: TransactionResult | null;
   error: string;
+  historyHref?: string;
 }
 
-export function TransactionResultBox({ result, error }: TransactionResultBoxProps) {
+export function TransactionResultBox({
+  result,
+  error,
+  historyHref = '/dashboard/history',
+}: TransactionResultBoxProps) {
   if (error) {
     return (
-      <div className="mt-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded text-sm">
+      <div className="mt-4 bg-danger-subtle border border-danger-border text-danger-strong px-4 py-3 rounded-control text-sm">
         {error}
       </div>
     );
@@ -22,12 +27,12 @@ export function TransactionResultBox({ result, error }: TransactionResultBoxProp
 
   return (
     <div
-      className={`mt-4 px-4 py-3 rounded text-sm border ${
+      className={`mt-4 px-4 py-3 rounded-control text-sm border ${
         result.status === 'SUCCESS'
-          ? 'bg-green-50 border-green-200 text-green-700'
+          ? 'bg-success-subtle border-success-border text-success-strong'
           : result.status === 'PROCESSING'
           ? 'bg-yellow-50 border-yellow-200 text-yellow-700'
-          : 'bg-red-50 border-red-200 text-red-700'
+          : 'bg-danger-subtle border-danger-border text-danger-strong'
       }`}
     >
       <div className="flex items-center justify-between">
@@ -37,36 +42,36 @@ export function TransactionResultBox({ result, error }: TransactionResultBoxProp
         </div>
       </div>
       <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 text-xs">
-        <div>
-          <span className="text-gray-500">Reference:</span>{' '}
-          <span className="font-mono">{result.transaction_ref}</span>
+        <div className="min-w-0 break-words">
+          <span className="text-ink-3">Reference:</span>{' '}
+          <span className="font-mono break-all">{result.transaction_ref}</span>
         </div>
         {result.provider_reference && (
-          <div>
-            <span className="text-gray-500">Provider Ref:</span>{' '}
-            <span className="font-mono">{result.provider_reference}</span>
+          <div className="min-w-0 break-words">
+            <span className="text-ink-3">Provider Ref:</span>{' '}
+            <span className="font-mono break-all">{result.provider_reference}</span>
           </div>
         )}
         {result.destination && (
-          <div>
-            <span className="text-gray-500">Destination:</span> {result.destination}
+          <div className="min-w-0 break-words">
+            <span className="text-ink-3">Destination:</span> {result.destination}
           </div>
         )}
         {result.amount && (
-          <div>
-            <span className="text-gray-500">Amount:</span> {formatIDR(result.amount)}
+          <div className="min-w-0 break-words">
+            <span className="text-ink-3">Amount:</span> {formatIDR(result.amount)}
           </div>
         )}
         {result.created_at && (
-          <div>
-            <span className="text-gray-500">Time:</span> {formatDate(result.created_at)}
+          <div className="min-w-0 break-words">
+            <span className="text-ink-3">Time:</span> {formatDate(result.created_at)}
           </div>
         )}
       </div>
       <div className="mt-2">
         <a
-          href="/dashboard/history"
-          className="text-xs underline text-blue-600 hover:text-blue-800"
+          href={historyHref}
+          className="text-xs underline text-primary hover:text-primary-hover"
         >
           View in History →
         </a>

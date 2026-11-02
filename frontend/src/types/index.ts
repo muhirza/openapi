@@ -56,7 +56,6 @@ export interface BalanceResponse {
 export interface BalanceSummary {
   eload: BalanceResponse | null;
   dompul: BalanceResponse | null;
-  pulsa: BalanceResponse | null;
 }
 
 // ---------- History / Transactions ----------
@@ -181,6 +180,7 @@ export interface LocalTransactionOut {
   amount: string | null;
   status: string;
   provider_reference: string | null;
+  source: 'app' | 'synced' | string;
   destination: string | null;
   payment_method: string | null;
   request_timestamp: string | null;
@@ -195,6 +195,16 @@ export interface LocalTransactionOut {
 
 export interface LocalTransactionDetail extends LocalTransactionOut {
   raw_response: Record<string, unknown> | null;
+  raw_response_unmasked?: Record<string, unknown> | null;
+  metadata_unmasked?: Record<string, unknown> | null;
+}
+
+export interface LocalTransactionSummary {
+  total: number;
+  success: number;
+  failed: number;
+  processing: number;
+  success_amount: string;
 }
 
 export interface LocalTransactionListResponse {
@@ -203,6 +213,119 @@ export interface LocalTransactionListResponse {
   page: number;
   per_page: number;
   total_pages: number;
+  summary: LocalTransactionSummary | null;
+}
+
+// ---------- Provider history auto-sync ----------
+
+export interface SyncSettings {
+  enabled: boolean;
+  interval_minutes: number;
+  last_sync_at: string | null;
+  last_sync_status: string | null;
+  last_sync_error: string | null;
+  last_sync_count: number | null;
+  next_sync_at: string | null;
+}
+
+export interface SyncRunResult {
+  added: number;
+  synced_at: string;
+}
+
+// ---------- Digital Stock ----------
+
+export type StockFamily = 'awg' | 'xwg';
+
+export interface StockItem {
+  voucher_type_code: string;
+  description: string | null;
+  voucher_price: string | null;
+  voucher_balance: number;
+  effective_date: string | null;
+  expiration_date: string | null;
+  voucher_exp_date: string | null;
+  allow_type: string | null;
+  voucher_id: string | null;
+}
+
+export interface StockListResponse {
+  family: string;
+  items: StockItem[];
+  total: number;
+  stock_value: string;
+  total_vouchers: number;
+  ro_type: string | null;
+  fetched_at: string;
+}
+
+export interface StockInjectRequest {
+  family: StockFamily;
+  targets: string[];
+  voucher_id: string;
+  allow_type: string;
+  voucher_type_code: string;
+  description?: string | null;
+  price?: string | null;
+}
+
+export type StockServiceType =
+  | 'SELLVOUCHER'
+  | 'PHYSICALVOUCHER'
+  | 'TRANSFER'
+  | 'BUYSTOCK'
+  | 'EXTENDSTOCK'
+  | 'TRFBALANCE'
+  | 'TEMBAKSTOK';
+
+// ---------- Digital Stock History ----------
+
+export interface StockHistoryItem {
+  id: number;
+  family: StockFamily | string;
+  servicetype: StockServiceType | string;
+  master_trx_id: string;
+  type: string | null;
+  status: string;
+  status_raw: string | null;
+  description: string | null;
+  voucher_price: string | null;
+  price_normal: string | null;
+  voucher_type_code: string | null;
+  source_msisdn: string | null;
+  destination_msisdn: string | null;
+  created_dtm: string | null;
+  synced_at: string | null;
+  detail_status: string | null;
+  detail_fetched_at: string | null;
+}
+
+export interface StockHistoryDetailRow {
+  bMsisdn: string | null;
+  status: string | null;
+  statusDetail: string | null;
+}
+
+export interface StockHistoryDetail extends StockHistoryItem {
+  detail: StockHistoryDetailRow[] | null;
+  raw_response: Record<string, unknown> | null;
+  raw_response_unmasked?: Record<string, unknown> | null;
+}
+
+export interface StockHistorySummary {
+  total: number;
+  success: number;
+  failed: number;
+  processing: number;
+}
+
+export interface StockHistoryListResponse {
+  items: StockHistoryItem[];
+  total: number;
+  page: number;
+  per_page: number;
+  total_pages: number;
+  summary: StockHistorySummary | null;
 }
 
 // ---------- Auth ----------

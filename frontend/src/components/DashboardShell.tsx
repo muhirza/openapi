@@ -34,7 +34,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
   if (!username) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center text-gray-500">Loading...</div>
+        <div className="text-center text-ink-3">Loading...</div>
       </div>
     );
   }

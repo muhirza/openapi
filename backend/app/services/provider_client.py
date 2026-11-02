@@ -44,7 +44,7 @@ class ProviderClient:
     def __init__(self, timeout: float = 30.0):
         self.timeout = timeout
 
-    def _build_url(self, endpoint: str) -> str:
+    def build_url(self, endpoint: str) -> str:
         base = settings.provider_base_url.rstrip("/")
         prefix = settings.provider_api_prefix.rstrip("/")
         return f"{base}{prefix}{endpoint}"
@@ -129,9 +129,8 @@ class ProviderClient:
         api_key: str,
         params: dict | None = None,
     ) -> dict:
-        url = self._build_url(endpoint)
         headers = self._build_headers(header_template, token, api_id, api_key)
-        return await self._request("GET", url, headers, params)
+        return await self._request("GET", self.build_url(endpoint), headers, params)
 
     async def post(
         self,
@@ -142,7 +141,7 @@ class ProviderClient:
         api_key: str,
         data: dict | None = None,
     ) -> dict:
-        url = self._build_url(endpoint)
+        url = self.build_url(endpoint)
         headers = self._build_headers(header_template, token, api_id, api_key)
         return await self._request("POST", url, headers, params=data)
 
@@ -181,7 +180,7 @@ class ProviderClient:
         json_body: dict | list | None = None,
     ) -> ProviderResult:
         """POST with JSON body; returns full envelope; does NOT raise."""
-        url = self._build_url(endpoint)
+        url = self.build_url(endpoint)
         headers = self._build_headers(header_template, token, api_id, api_key)
         try:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
@@ -212,7 +211,7 @@ class ProviderClient:
         params: dict | None = None,
     ) -> ProviderResult:
         """GET returning full envelope; does NOT raise."""
-        url = self._build_url(endpoint)
+        url = self.build_url(endpoint)
         headers = self._build_headers(header_template, token, api_id, api_key)
         try:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
