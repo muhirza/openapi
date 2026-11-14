@@ -134,6 +134,9 @@ class Settings(BaseSettings):
     session_absolute_hours: int = 12
     session_cookie_secure: bool = False
 
+    # Comma-separated list of allowed browser origins
+    allowed_origins: str = "http://localhost:3000"
+
 
 @lru_cache
 def get_settings() -> Settings:

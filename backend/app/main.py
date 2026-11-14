@@ -18,6 +18,7 @@ from app.api.routes import (
     stock_history,
     transactions,
 )
+from app.core.config import settings
 from app.core.security import hash_password
 from app.db.session import engine, AsyncSessionLocal
 from app.models.base import Base
@@ -33,7 +34,11 @@ app = FastAPI(title="Transaction Dashboard API", version="0.1.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=[
+        origin.strip()
+        for origin in settings.allowed_origins.split(",")
+        if origin.strip()
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

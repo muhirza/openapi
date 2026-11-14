@@ -19,6 +19,12 @@ coverage/
 .env.test.local
 .env.production.local
 
+# Deploy state (written on the server by deploy/release.sh)
+.release.env
+
+# Local migration backups (dump + copy of .env — never commit)
+backup/
+
 # IDE
 .vscode/
 .idea/

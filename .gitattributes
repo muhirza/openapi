@@ -1,0 +1,4 @@
+# Keep shell scripts and container config LF-only — CRLF breaks /bin/sh on Linux
+*.sh            text eol=lf
+Dockerfile*     text eol=lf
+deploy/Caddyfile text eol=lf
