@@ -1,7 +1,7 @@
 # Deploy runbook — Tencent Lighthouse, Cloudflare Tunnel `vps`
 
-Host: `43.133.147.35` · Ubuntu 24.04 · 2 vCPU / 2 GB RAM / 40 GB SSD / 20 Mbps
-Public origin: `https://openapi.miate.my.id` → tunnel `vps` → `127.0.0.1:8080` → edge → frontend / backend
+Host: `VPS_IP` · Ubuntu 24.04 · 2 vCPU / 2 GB RAM / 40 GB SSD / 20 Mbps
+Public origin: `https://openapi.example.com` → tunnel `vps` → `127.0.0.1:8080` → edge → frontend / backend
 App dir: `/opt/dashboard`
 
 The host already runs n8n, waha and a router. **Never touch their containers, routes or ports.**
@@ -66,8 +66,8 @@ docker compose exec -T db psql -U dashboard -d dashboard -c "select (select coun
 Record those four counts. They are the acceptance test in §6.
 
 ```powershell
-scp .\backup\dashboard.dump ubuntu@43.133.147.35:/home/ubuntu/dashboard.dump
-scp .\backup\.env.prod      ubuntu@43.133.147.35:/home/ubuntu/.env.prod
+scp .\backup\dashboard.dump ubuntu@VPS_IP:/home/ubuntu/dashboard.dump
+scp .\backup\.env.prod      ubuntu@VPS_IP:/home/ubuntu/.env.prod
 ```
 
 ---
@@ -88,8 +88,8 @@ Edit `.env` — change **only** these:
 | `POSTGRES_PASSWORD` | new strong password |
 | `DATABASE_URL` | `postgresql+asyncpg://dashboard:NEWPASS@db:5432/dashboard` |
 | `SESSION_COOKIE_SECURE` | `true` |
-| `NEXT_PUBLIC_API_URL` | `https://openapi.miate.my.id` |
-| `ALLOWED_ORIGINS` | `https://openapi.miate.my.id` |
+| `NEXT_PUBLIC_API_URL` | `https://openapi.example.com` |
+| `ALLOWED_ORIGINS` | `https://openapi.example.com` |
 | `SEED_USERNAME` / `SEED_PASSWORD` | changed (no-op, users already exist) |
 
 Leave `ENCRYPTION_KEY`, `APP_SECRET_KEY` and every `PROVIDER_*` untouched.
@@ -137,9 +137,9 @@ Fallback if 2 GB still isn't enough: build on the Windows machine and ship the i
 (measured: 227 MB frontend, 600 MB backend).
 
 ```powershell
-docker build -f frontend/Dockerfile.prod --build-arg NEXT_PUBLIC_API_URL=https://openapi.miate.my.id -t dashboard-frontend:prod frontend
+docker build -f frontend/Dockerfile.prod --build-arg NEXT_PUBLIC_API_URL=https://openapi.example.com -t dashboard-frontend:prod frontend
 docker build -f backend/Dockerfile.prod -t dashboard-backend:prod backend
-docker save dashboard-frontend:prod dashboard-backend:prod | ssh ubuntu@43.133.147.35 "docker load"
+docker save dashboard-frontend:prod dashboard-backend:prod | ssh ubuntu@VPS_IP "docker load"
 ```
 
 Then on the host: `docker compose -f docker-compose.prod.yml up -d` (compose reuses the
@@ -151,20 +151,20 @@ local images it just loaded).
 
 Zero Trust → Networks → Tunnels → `vps` → Routes → **Add route → Published application**
 
-- Subdomain `openapi`, domain `miate.my.id`, type `HTTP`
+- Subdomain `openapi`, domain `example.com`, type `HTTP`
 - URL `http://localhost:8080` — or `http://172.17.0.1:8080` if `cloudflared` is a container
   (then change the edge mapping to `"0.0.0.0:8080:80"`)
 
 Verification:
 
 ```bash
-curl -s https://openapi.miate.my.id/health
-curl -s -o /dev/null -w '%{http_code}\n' https://openapi.miate.my.id/
+curl -s https://openapi.example.com/health
+curl -s -o /dev/null -w '%{http_code}\n' https://openapi.example.com/
 
 # other routes must be unaffected
-curl -s -o /dev/null -w 'n8n %{http_code}\n'   https://n8n.miate.my.id/
-curl -s -o /dev/null -w 'waha %{http_code}\n'  https://waha.miate.my.id/
-curl -s -o /dev/null -w 'router %{http_code}\n' https://router.miate.my.id/
+curl -s -o /dev/null -w 'n8n %{http_code}\n'   https://n8n.example.com/
+curl -s -o /dev/null -w 'waha %{http_code}\n'  https://waha.example.com/
+curl -s -o /dev/null -w 'router %{http_code}\n' https://router.example.com/
 ```
 
 Acceptance in the browser:
@@ -217,22 +217,26 @@ One-time setup:
 ```bash
 # 1) deploy key on your machine
 ssh-keygen -t ed25519 -C "github-deploy" -f ~/.ssh/openapi_deploy -N ""
-ssh-copy-id -i ~/.ssh/openapi_deploy.pub ubuntu@43.133.147.35
+ssh-copy-id -i ~/.ssh/openapi_deploy.pub ubuntu@VPS_IP
 
 # 2) host fingerprint for VPS_KNOWN_HOSTS
-ssh-keyscan -H 43.133.147.35
+ssh-keyscan -H VPS_IP
 ```
 
 Repository → Settings → Secrets and variables → Actions:
 
 | Secret | Value |
 |---|---|
-| `VPS_HOST` | `43.133.147.35` |
+| `VPS_HOST` | `VPS_IP` |
 | `VPS_USER` | `ubuntu` |
 | `VPS_SSH_KEY` | contents of `~/.ssh/openapi_deploy` (the **private** key) |
-| `VPS_KNOWN_HOSTS` | output of `ssh-keyscan -H 43.133.147.35` |
+| `VPS_KNOWN_HOSTS` | output of `ssh-keyscan -H VPS_IP` |
 
-Optional repo **variables**: `PUBLIC_URL`, `NEXT_PUBLIC_SESSION_IDLE_MINUTES`.
+Optional repo **variables**: `NEXT_PUBLIC_SESSION_IDLE_MINUTES`.
+
+**Required repo variable: `PUBLIC_URL`** (e.g. `https://openapi.example.com`). The build job
+fails fast without it rather than publishing an image whose API origin points at the wrong
+host — `NEXT_PUBLIC_API_URL` is baked into the bundle at build time.
 
 The deploy job is gated on the repo variable `DEPLOY_ENABLED == 'true'`. Until you set it,
 pushes to `master` run tests and publish images but never touch the server. Set it only

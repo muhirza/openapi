@@ -25,6 +25,9 @@ coverage/
 # Local migration backups (dump + copy of .env — never commit)
 backup/
 
+# Real deploy specifics (hostnames, IPs) stay local; DEPLOY.md is public
+deploy/DEPLOY.local.md
+
 # IDE
 .vscode/
 .idea/
