@@ -1,6 +1,6 @@
 # Deploy runbook — Tencent Lighthouse, Cloudflare Tunnel `vps`
 
-Host: `43.133.47.35` · Ubuntu 24.04 · 2 vCPU / 2 GB RAM / 40 GB SSD / 20 Mbps
+Host: `43.133.147.35` · Ubuntu 24.04 · 2 vCPU / 2 GB RAM / 40 GB SSD / 20 Mbps
 Public origin: `https://openapi.miate.my.id` → tunnel `vps` → `127.0.0.1:8080` → edge → frontend / backend
 App dir: `/opt/dashboard`
 
@@ -36,6 +36,12 @@ cat > /etc/docker/daemon.json <<'JSON'
 { "log-driver": "json-file", "log-opts": { "max-size": "10m", "max-file": "3" } }
 JSON
 systemctl restart docker
+
+# docker without sudo for the deploy user (release.sh runs over SSH as ubuntu)
+usermod -aG docker ubuntu
+
+# backup target, writable by the deploy user
+mkdir -p /var/backups/dashboard && chown ubuntu:ubuntu /var/backups/dashboard
 ```
 
 No inbound firewall changes are required for the app: the tunnel is outbound-only.
@@ -60,8 +66,8 @@ docker compose exec -T db psql -U dashboard -d dashboard -c "select (select coun
 Record those four counts. They are the acceptance test in §6.
 
 ```powershell
-scp .\backup\dashboard.dump root@43.133.47.35:/root/dashboard.dump
-scp .\backup\.env.prod      root@43.133.47.35:/root/.env.prod
+scp .\backup\dashboard.dump ubuntu@43.133.147.35:/home/ubuntu/dashboard.dump
+scp .\backup\.env.prod      ubuntu@43.133.147.35:/home/ubuntu/.env.prod
 ```
 
 ---
@@ -69,10 +75,10 @@ scp .\backup\.env.prod      root@43.133.47.35:/root/.env.prod
 ## 3. Code + config on the host
 
 ```bash
-mkdir -p /opt/dashboard && cd /opt/dashboard
+sudo mkdir -p /opt/dashboard && sudo chown ubuntu:ubuntu /opt/dashboard && cd /opt/dashboard
 git clone https://github.com/muhirza/openapi.git .
-cp /root/.env.prod .env && chmod 600 .env
-mv /root/dashboard.dump /root/dashboard.dump.bak   # keep outside the compose volume path
+cp ~/.env.prod .env && chmod 600 .env
+mv ~/dashboard.dump ~/dashboard.dump.bak   # keep outside the compose volume path
 ```
 
 Edit `.env` — change **only** these:
@@ -97,7 +103,7 @@ cd /opt/dashboard
 docker compose -f docker-compose.prod.yml up -d db
 docker compose -f docker-compose.prod.yml ps          # wait for (healthy)
 
-docker compose -f docker-compose.prod.yml cp /root/dashboard.dump.bak db:/tmp/dashboard.dump
+docker compose -f docker-compose.prod.yml cp ~/dashboard.dump.bak db:/tmp/dashboard.dump
 docker compose -f docker-compose.prod.yml exec -T db \
   pg_restore -U dashboard -d dashboard --no-owner --clean --if-exists /tmp/dashboard.dump
 
@@ -133,7 +139,7 @@ Fallback if 2 GB still isn't enough: build on the Windows machine and ship the i
 ```powershell
 docker build -f frontend/Dockerfile.prod --build-arg NEXT_PUBLIC_API_URL=https://openapi.miate.my.id -t dashboard-frontend:prod frontend
 docker build -f backend/Dockerfile.prod -t dashboard-backend:prod backend
-docker save dashboard-frontend:prod dashboard-backend:prod | ssh root@43.133.47.35 "docker load"
+docker save dashboard-frontend:prod dashboard-backend:prod | ssh ubuntu@43.133.147.35 "docker load"
 ```
 
 Then on the host: `docker compose -f docker-compose.prod.yml up -d` (compose reuses the
@@ -211,22 +217,26 @@ One-time setup:
 ```bash
 # 1) deploy key on your machine
 ssh-keygen -t ed25519 -C "github-deploy" -f ~/.ssh/openapi_deploy -N ""
-ssh-copy-id -i ~/.ssh/openapi_deploy.pub root@43.133.47.35
+ssh-copy-id -i ~/.ssh/openapi_deploy.pub ubuntu@43.133.147.35
 
 # 2) host fingerprint for VPS_KNOWN_HOSTS
-ssh-keyscan -H 43.133.47.35
+ssh-keyscan -H 43.133.147.35
 ```
 
 Repository → Settings → Secrets and variables → Actions:
 
 | Secret | Value |
 |---|---|
-| `VPS_HOST` | `43.133.47.35` |
-| `VPS_USER` | `root` |
+| `VPS_HOST` | `43.133.147.35` |
+| `VPS_USER` | `ubuntu` |
 | `VPS_SSH_KEY` | contents of `~/.ssh/openapi_deploy` (the **private** key) |
-| `VPS_KNOWN_HOSTS` | output of `ssh-keyscan -H 43.133.47.35` |
+| `VPS_KNOWN_HOSTS` | output of `ssh-keyscan -H 43.133.147.35` |
 
 Optional repo **variables**: `PUBLIC_URL`, `NEXT_PUBLIC_SESSION_IDLE_MINUTES`.
+
+The deploy job is gated on the repo variable `DEPLOY_ENABLED == 'true'`. Until you set it,
+pushes to `master` run tests and publish images but never touch the server. Set it only
+after the 4 secrets below exist and the first manual deploy (§4–§6) has passed.
 
 Once, on the VPS — GHCR pull access (packages inherit repo visibility):
 
