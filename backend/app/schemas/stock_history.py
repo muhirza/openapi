@@ -2,7 +2,7 @@ from datetime import date, datetime
 from decimal import Decimal
 from typing import List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class StockHistoryItem(BaseModel):
@@ -47,3 +47,28 @@ class StockHistoryListResponse(BaseModel):
     per_page: int
     total_pages: int
     summary: Optional[StockHistorySummary] = None
+
+
+# ---------- Provider lookup (Transaction Info page) ----------
+
+
+class StockTransactionInfoRequest(BaseModel):
+    """Lookup parameters mirroring the Info Transaction Detail API."""
+
+    servicetype: str
+    master_trx_id: str = Field(..., min_length=1, max_length=100)
+
+
+class StockTransactionInfoRow(BaseModel):
+    bMsisdn: Optional[str] = None
+    status: Optional[str] = None
+    statusDetail: Optional[str] = None
+
+
+class StockTransactionInfoResponse(BaseModel):
+    family: str
+    servicetype: str
+    master_trx_id: str
+    status: Optional[str] = None
+    rows: List[StockTransactionInfoRow] = []
+    raw_response: Optional[dict] = None

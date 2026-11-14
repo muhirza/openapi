@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel, Field
 
 
@@ -18,6 +20,7 @@ class UserOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
-class TokenResponse(BaseModel):
-    access_token: str
-    token_type: str = "bearer"
+class SessionInfo(BaseModel):
+    username: str
+    idle_expires_at: datetime
+    session_expires_at: datetime

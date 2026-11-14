@@ -1,12 +1,29 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import * as XLSX from 'xlsx';
 import { api } from '../lib/api';
-import { ProductListResponse, SyncProductResult } from '../types';
+import { ProductListResponse, ProductOut, SyncProductResult } from '../types';
 import { formatIDR, formatRelative, activeBadgeClass } from '../lib/format';
 
 type ActiveFilter = 'all' | 'active' | 'inactive';
 type SortField = 'product_code' | 'product_name' | 'product_type' | 'owner' | 'price' | 'active' | 'last_synced_at';
+type ExportMode = 'all' | 'filtered';
+
+type ProductQuery = Omit<NonNullable<Parameters<typeof api.getProducts>[0]>, 'page' | 'perPage'>;
+
+const fetchAllProducts = async (opts: ProductQuery = {}) => {
+  const rows: ProductOut[] = [];
+  let page = 1;
+  let totalPages = 1;
+  do {
+    const res = await api.getProducts({ ...opts, page, perPage: 100 });
+    rows.push(...res.products);
+    totalPages = res.total_pages;
+    page++;
+  } while (page <= totalPages);
+  return rows;
+};
 
 export function ProductList() {
   const [data, setData] = useState<ProductListResponse | null>(null);
@@ -15,8 +32,8 @@ export function ProductList() {
 
   const [filter, setFilter] = useState<ActiveFilter>('all');
   const [brand, setBrand] = useState('');
-  const [name, setName] = useState('');
-  const [debouncedName, setDebouncedName] = useState('');
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [productType, setProductType] = useState('');
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(25);
@@ -25,15 +42,16 @@ export function ProductList() {
 
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState<SyncProductResult | null>(null);
+  const [exporting, setExporting] = useState<ExportMode | null>(null);
 
-  // Debounce name input
+  // Debounce search input
   useEffect(() => {
-    const t = setTimeout(() => setDebouncedName(name), 300);
+    const t = setTimeout(() => setDebouncedSearch(search), 300);
     return () => clearTimeout(t);
-  }, [name]);
+  }, [search]);
 
   // Reset page when filters/sort change
-  useEffect(() => { setPage(1); }, [filter, brand, debouncedName, productType, sortField]);
+  useEffect(() => { setPage(1); }, [filter, brand, debouncedSearch, productType, sortField]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -42,7 +60,7 @@ export function ProductList() {
       const res = await api.getProducts({
         active: filter === 'all' ? null : filter === 'active',
         brand: brand || undefined,
-        name: debouncedName || undefined,
+        search: debouncedSearch || undefined,
         productType: productType || undefined,
         page,
         perPage,
@@ -55,7 +73,7 @@ export function ProductList() {
     } finally {
       setLoading(false);
     }
-  }, [filter, brand, debouncedName, productType, page, perPage, sortField, sortDir]);
+  }, [filter, brand, debouncedSearch, productType, page, perPage, sortField, sortDir]);
 
   // Initial load + reload when params change
   useEffect(() => {
@@ -74,6 +92,43 @@ export function ProductList() {
       setError(err instanceof Error ? err.message : 'Failed to sync products');
     } finally {
       setSyncing(false);
+    }
+  };
+
+  const handleExport = async (mode: ExportMode) => {
+    setExporting(mode);
+    setError('');
+    try {
+      const rows = await fetchAllProducts(
+        mode === 'all'
+          ? {}
+          : {
+              active: filter === 'all' ? null : filter === 'active',
+              brand: brand || undefined,
+              search: debouncedSearch || undefined,
+              productType: productType || undefined,
+              sortBy: sortField || undefined,
+              sortDir: sortField ? sortDir : undefined,
+            }
+      );
+      const sheet = XLSX.utils.json_to_sheet(
+        rows.map((p) => ({
+          Code: p.product_code,
+          Name: p.product_name ?? '',
+          Type: p.product_type ?? '',
+          Brand: p.owner ?? '',
+          Price: p.price ? Number(p.price) : '',
+          Status: p.active ? 'Active' : 'Inactive',
+          'Last Synced': p.last_synced_at ?? '',
+        }))
+      );
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, sheet, 'Products');
+      XLSX.writeFile(wb, `products-${mode}-${new Date().toISOString().slice(0, 10)}.xlsx`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to export products');
+    } finally {
+      setExporting(null);
     }
   };
 
@@ -111,6 +166,22 @@ export function ProductList() {
           </div>
 
           <div className="flex items-center gap-3">
+            {/* Export */}
+            <button
+              onClick={() => handleExport('all')}
+              disabled={exporting !== null}
+              className="inline-flex items-center px-4 py-2 border border-line-strong rounded-control shadow-sm text-sm font-medium text-ink-2 bg-surface hover:bg-canvas disabled:opacity-50"
+            >
+              {exporting === 'all' ? 'Exporting...' : 'Export All'}
+            </button>
+            <button
+              onClick={() => handleExport('filtered')}
+              disabled={exporting !== null}
+              className="inline-flex items-center px-4 py-2 border border-line-strong rounded-control shadow-sm text-sm font-medium text-ink-2 bg-surface hover:bg-canvas disabled:opacity-50"
+            >
+              {exporting === 'filtered' ? 'Exporting...' : 'Export Filtered'}
+            </button>
+
             {/* Sync */}
             <button
               onClick={handleSync}
@@ -139,9 +210,9 @@ export function ProductList() {
           {/* Product Name */}
           <input
             type="text"
-            value={name}
-            onChange={(e) => { setName(e.target.value); setPage(1); }}
-            placeholder="Product name..."
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            placeholder="Search code or name..."
             className="w-64 rounded-control border border-line-strong pl-3 pr-3 py-2 text-sm focus:border-primary focus:ring-primary"
           />
 
@@ -169,10 +240,10 @@ export function ProductList() {
           </select>
 
           {/* Clear filters */}
-          {brand || name || productType || filter !== 'all' ? (
+          {brand || search || productType || filter !== 'all' ? (
             <button
               onClick={() => {
-                setBrand(''); setName(''); setProductType(''); setFilter('all'); setPage(1);
+                setBrand(''); setSearch(''); setProductType(''); setFilter('all'); setPage(1);
               }}
               className="text-sm text-ink-3 hover:text-ink-2 underline"
             >
@@ -218,15 +289,15 @@ export function ProductList() {
             <tr>
               <th
                 className="px-6 py-3 text-left text-xs font-medium text-ink-3 uppercase tracking-wider cursor-pointer hover:bg-line"
-                onClick={() => toggleSort('product_code')}
-              >
-                Code{getSortIcon('product_code')}
-              </th>
-              <th
-                className="px-6 py-3 text-left text-xs font-medium text-ink-3 uppercase tracking-wider cursor-pointer hover:bg-line"
                 onClick={() => toggleSort('product_name')}
               >
                 Name{getSortIcon('product_name')}
+              </th>
+              <th
+                className="px-6 py-3 text-left text-xs font-medium text-ink-3 uppercase tracking-wider cursor-pointer hover:bg-line"
+                onClick={() => toggleSort('product_code')}
+              >
+                Code{getSortIcon('product_code')}
               </th>
               <th
                 className="px-6 py-3 text-left text-xs font-medium text-ink-3 uppercase tracking-wider cursor-pointer hover:bg-line"
@@ -277,10 +348,10 @@ export function ProductList() {
               data.products.map((p) => (
                 <tr key={p.id} className="hover:bg-canvas">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-ink">
-                    {p.product_code}
+                    {p.product_name || '—'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-ink-2">
-                    {p.product_name || '—'}
+                    {p.product_code}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-ink-2">
                     {p.product_type || '—'}

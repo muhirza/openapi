@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import select, func, or_, and_
 
 from app.api.routes import (
+    analytics,
     auth,
     profile,
     balance,
@@ -24,6 +25,7 @@ from app.models.user import User
 from app.models.local_transaction import LocalTransaction
 from app.models.stock_transaction import StockTransaction
 from app.models.user_sync_setting import UserSyncSetting
+from app.models.user_session import UserSession  # noqa: F401 — registered for create_all
 
 logger = logging.getLogger("uvicorn.error")
 
@@ -35,9 +37,11 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["Content-Disposition", "X-Export-Row-Count"],
 )
 
 app.include_router(auth.router, prefix="/api")
+app.include_router(analytics.router, prefix="/api")
 app.include_router(profile.router, prefix="/api")
 app.include_router(balance.router, prefix="/api")
 app.include_router(history.router, prefix="/api")

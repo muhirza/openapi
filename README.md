@@ -38,7 +38,7 @@ Frontend (Next.js)  →  Backend (FastAPI)  →  PostgreSQL
 backend/
   app/
     api/routes/     # auth, profile, token endpoints
-    core/           # config, security (hash/encrypt/JWT)
+    core/           # config, security (hash/encrypt)
     models/         # SQLAlchemy models
     schemas/        # Pydantic schemas
     services/       # TokenService (calls provider)
@@ -49,16 +49,19 @@ frontend/
   src/app/          # Next.js App Router pages
   src/components/   # React components
   src/lib/          # API client
-  src/hooks/        # useAuth
+  src/hooks/        # useSession
 ```
 
 ## Environment Variables
 
 See `.env.example` for all options. Key ones:
 
-- `APP_SECRET_KEY` — JWT signing key
+- `APP_SECRET_KEY` — app secret (also the Fernet fallback)
 - `ENCRYPTION_KEY` — Fernet key for credential encryption
 - `DATABASE_URL` — Postgres connection string
+- `SESSION_IDLE_MINUTES` — log out after this many minutes without activity (default 120)
+- `SESSION_ABSOLUTE_HOURS` — hard cap on session age (default 12)
+- `SESSION_COOKIE_SECURE` — set `true` behind HTTPS
 - `PROVIDER_*` — Provider token endpoint config (endpoint, method, content type, grant type, extra fields)
 
 ## API Endpoints
@@ -66,12 +69,21 @@ See `.env.example` for all options. Key ones:
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | POST | `/api/register` | Register first user |
-| POST | `/api/login` | Login (sets HttpOnly cookie) |
-| POST | `/api/logout` | Logout (clears cookie) |
+| POST | `/api/login` | Login (sets HttpOnly session cookie, 12 h max) |
+| POST | `/api/logout` | Revoke the session and clear cookie |
+| GET | `/api/me` | Current session info (also the client heartbeat) |
 | GET | `/api/profile/credentials` | Credential status (never returns secret) |
 | PUT | `/api/profile/credentials` | Save Client ID + Secret (encrypted) |
 | GET | `/api/token/status` | Token status + expiry |
 | POST | `/api/token/refresh` | Force fetch new token from provider |
+
+## Sessions
+
+Auth uses an opaque token in an HttpOnly, SameSite=Lax cookie. Tokens are stored
+hashed in `user_sessions`, expire after **2 hours idle** or **12 hours** from login
+(whichever comes first), and logout revokes them server-side. The frontend validates
+the session with `GET /api/me` on every dashboard load, mirrors the idle timer, and
+redirects to `/login?expired=1` when the session ends.
 
 ## MVP0 Scope
 

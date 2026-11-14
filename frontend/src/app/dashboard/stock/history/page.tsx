@@ -189,7 +189,7 @@ export default function StockHistoryPage() {
           {/* Filters */}
           <div className="flex flex-wrap items-center gap-3 mb-4">
             <div className="inline-flex rounded-control border border-line-strong p-0.5 text-sm" role="group" aria-label="Stock family">
-              {(['awg', 'xwg'] as const).map((value) => (
+              {(['xwg', 'awg'] as const).map((value) => (
                 <button
                   key={value}
                   type="button"

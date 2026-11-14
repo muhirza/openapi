@@ -328,10 +328,112 @@ export interface StockHistoryListResponse {
   summary: StockHistorySummary | null;
 }
 
+export interface StockTransactionInfoResponse {
+  family: StockFamily | string;
+  servicetype: StockServiceType | string;
+  master_trx_id: string;
+  status: string | null;
+  rows: StockHistoryDetailRow[];
+  raw_response: Record<string, unknown> | null;
+}
+
 // ---------- Auth ----------
 
-export interface AuthState {
-  isAuthenticated: boolean;
-  username: string | null;
-  loading: boolean;
+export interface SessionInfo {
+  username: string;
+  idle_expires_at: string;
+  session_expires_at: string;
+}
+
+// ---------- Analytics ----------
+
+export type AnalyticsRange = '7d' | '30d' | '90d' | 'month';
+
+export interface AnalyticsWindow {
+  key: AnalyticsRange;
+  start: string;
+  end: string;
+  elapsed_days: number;
+}
+
+export interface NonDigitalKpis {
+  total: number;
+  success: number;
+  failed: number;
+  processing: number;
+  transaction_amount: string; // Decimal serialised as string
+  successful_with_amount: number;
+  average_successful_amount: string | null;
+  success_rate: string | null; // 0-1 fraction
+  error_rate: string | null; // 0-1 fraction
+  transactions_per_day: string;
+}
+
+export interface DailyPoint {
+  date: string;
+  total: number;
+  success: number;
+  failed: number;
+  processing: number;
+  transaction_amount: string;
+}
+
+export interface MonthlyMdaPoint {
+  month: string;
+  elapsed_days: number;
+  is_current_month: boolean;
+  transaction_count: number;
+  transaction_amount: string;
+  transactions_per_day: string;
+  amount_per_day: string;
+}
+
+export interface NonDigitalMda {
+  current: MonthlyMdaPoint;
+  previous: MonthlyMdaPoint | null;
+  months: MonthlyMdaPoint[];
+}
+
+export interface BrandBreakdown {
+  brand: string;
+  transaction_count: number;
+  transaction_amount: string;
+}
+
+export interface BrandPerformance extends BrandBreakdown {
+  count_share: string; // 0-1 fraction
+  amount_share: string; // 0-1 fraction
+}
+
+export interface TransactionTypePerformance {
+  transaction_type: string;
+  transaction_count: number;
+  transaction_amount: string;
+  brands: BrandBreakdown[];
+}
+
+export interface TopProduct {
+  transaction_type: string;
+  product_code: string | null;
+  product_name: string | null;
+  display_name: string;
+  brand: string;
+  transaction_count: number;
+  transaction_amount: string;
+}
+
+export interface TopProductsResponse {
+  range: AnalyticsWindow;
+  transaction_type: string | null;
+  brand: string | null;
+  items: TopProduct[];
+}
+
+export interface NonDigitalAnalyticsResponse {
+  range: AnalyticsWindow;
+  kpis: NonDigitalKpis;
+  daily: DailyPoint[];
+  mda: NonDigitalMda;
+  brands: BrandPerformance[];
+  transaction_types: TransactionTypePerformance[];
 }

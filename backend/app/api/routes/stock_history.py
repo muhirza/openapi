@@ -14,10 +14,13 @@ from app.schemas.stock_history import (
     StockHistoryItem,
     StockHistoryListResponse,
     StockHistorySummary,
+    StockTransactionInfoRequest,
+    StockTransactionInfoResponse,
 )
 from app.services.provider_client import ProviderAPIError
 from app.services.stock_history_service import StockHistoryService
 from app.services.token_service import TokenFetchError
+from app.services.transaction.masking import mask_sensitive
 
 router = APIRouter()
 
@@ -175,3 +178,49 @@ async def refresh_stock_history_detail(
         raise HTTPException(status_code=502, detail=str(e))
 
     return StockHistoryDetailOut.model_validate(record)
+
+
+# ---------- Provider lookup (Transaction Info page) ----------
+
+
+@router.post(
+    "/stock/{family}/transaction-info", response_model=StockTransactionInfoResponse
+)
+async def lookup_stock_transaction_info(
+    family: str,
+    payload: StockTransactionInfoRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Look up a stock transaction at the provider by masterTrxId.
+
+    Read-only: lets users check transactions performed outside this dashboard
+    via the AWG/XWG Info Transaction Detail API. Nothing is persisted.
+    """
+    _require_family(family)
+    service = StockHistoryService(db)
+    try:
+        result = await service.fetch_detail(
+            current_user.id, family, payload.master_trx_id, payload.servicetype
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except TokenFetchError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    if not result.ok:
+        parts = [result.error_code, result.error_message]
+        detail = " ".join(str(p) for p in parts if p and p != "Unknown error")
+        raise HTTPException(
+            status_code=502, detail=detail or "Provider detail lookup failed"
+        )
+
+    rows = service.parse_detail_rows(result.data, payload.master_trx_id)
+    return StockTransactionInfoResponse(
+        family=family,
+        servicetype=payload.servicetype,
+        master_trx_id=payload.master_trx_id,
+        status=service.aggregate_detail_status(rows),
+        rows=rows,
+        raw_response=mask_sensitive(result.raw) if isinstance(result.raw, dict) else None,
+    )

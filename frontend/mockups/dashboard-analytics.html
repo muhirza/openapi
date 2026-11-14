@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dashboard — Non-digital stock analytics (mockup v2)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --surface: #FFFFFF;
+    --canvas: #F8FAFC;
+    --surface-muted: #F1F5F9;
+    --line: #E2E8F0;
+    --line-strong: #CBD5E1;
+    --ink: #0F172A;
+    --ink-2: #334155;
+    --ink-3: #64748B;
+    --ink-4: #94A3B8;
+    --primary: #2563EB;
+    --primary-hover: #1D4ED8;
+    --primary-subtle: #EFF6FF;
+    --primary-border: #BFDBFE;
+    --success: #16A34A;
+    --success-subtle: #DCFCE7;
+    --success-border: #BBF7D0;
+    --success-strong: #15803D;
+    --warning: #D97706;
+    --warning-subtle: #FEF3C7;
+    --warning-strong: #B45309;
+    --danger: #DC2626;
+    --danger-subtle: #FEE2E2;
+    --danger-border: #FECACA;
+    --danger-strong: #B91C1C;
+    --info: #0284C7;
+    --info-subtle: #E0F2FE;
+    --info-strong: #0369A1;
+    --radius-surface: 8px;
+    --radius-control: 6px;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+
+  body {
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: 'Fira Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 14px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: inherit; }
+  button, select { font-family: inherit; }
+  .tnum { font-variant-numeric: tabular-nums; }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar {
+    position: fixed;
+    top: 0; bottom: 0; left: 0;
+    width: 256px;
+    background: var(--surface);
+    border-right: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    z-index: 20;
+  }
+  .brand {
+    height: 64px; display: flex; align-items: center; gap: 10px;
+    padding: 0 24px; border-bottom: 1px solid var(--line); flex: none;
+  }
+  .brand-mark {
+    width: 32px; height: 32px; border-radius: var(--radius-surface);
+    background: var(--primary); color: #fff; display: grid; place-items: center; flex: none;
+  }
+  .brand-title { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
+  .nav { flex: 1; overflow-y: auto; padding: 20px 12px; }
+  .nav-group { margin-bottom: 24px; }
+  .nav-group:last-child { margin-bottom: 0; }
+  .nav-group-title {
+    margin: 0 0 8px; padding: 0 12px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--ink-4);
+  }
+  .nav a {
+    display: flex; align-items: center; gap: 12px;
+    padding: 8px 12px; border-radius: var(--radius-control);
+    color: var(--ink-2); text-decoration: none; font-size: 14px; font-weight: 500;
+  }
+  .nav a:hover { background: var(--canvas); color: var(--ink); }
+  .nav a.active { background: var(--primary-subtle); color: var(--primary-hover); }
+  .nav a:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+  .nav svg { width: 18px; height: 18px; flex: none; }
+  .sidebar-footer {
+    border-top: 1px solid var(--line); padding: 16px;
+    display: flex; align-items: center; gap: 12px; flex: none;
+  }
+  .avatar {
+    width: 36px; height: 36px; border-radius: 999px;
+    background: var(--primary-subtle); color: var(--primary-hover);
+    display: grid; place-items: center; font-weight: 600; flex: none;
+  }
+  .sidebar-footer .who { flex: 1; font-size: 14px; font-weight: 500; color: var(--ink-2); }
+  .icon-btn {
+    border: 0; background: transparent; color: var(--ink-4);
+    padding: 6px; border-radius: var(--radius-control); cursor: pointer;
+    display: grid; place-items: center;
+  }
+  .icon-btn:hover { color: var(--danger); background: var(--danger-subtle); }
+
+  /* ---------- Main ---------- */
+  .main { margin-left: 256px; }
+  .container { max-width: 1280px; margin: 0 auto; padding: 32px; }
+
+  .page-head {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 20px; margin-bottom: 24px; flex-wrap: wrap;
+  }
+  h1 { margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.015em; }
+  .subtitle { margin: 4px 0 0; font-size: 14px; color: var(--ink-3); }
+  .head-controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+  .segmented {
+    display: inline-flex; gap: 2px; padding: 3px;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius-surface);
+  }
+  .segmented button {
+    border: 0; background: transparent; padding: 6px 12px;
+    border-radius: var(--radius-control); font-size: 13px; font-weight: 500;
+    color: var(--ink-3); cursor: pointer;
+  }
+  .segmented button:hover:not(.active) { background: var(--surface-muted); color: var(--ink-2); }
+  .segmented button.active { background: var(--primary); color: #fff; }
+  .segmented button:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+
+  .btn-ghost {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 12px; border: 1px solid var(--line);
+    background: var(--surface); border-radius: var(--radius-control);
+    color: var(--ink-2); font-size: 13px; font-weight: 500; cursor: pointer;
+  }
+  .btn-ghost:hover { background: var(--surface-muted); }
+  .btn-ghost svg { width: 14px; height: 14px; }
+
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 2px 8px; border: 1px solid var(--line); border-radius: 999px;
+    background: var(--surface); font-size: 11px; font-weight: 600;
+    color: var(--ink-3); white-space: nowrap;
+  }
+  .chip.sample { border-color: var(--primary-border); background: var(--primary-subtle); color: var(--primary-hover); }
+
+  .section-head {
+    display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+    margin: 28px 0 12px;
+  }
+  .section-head:first-of-type { margin-top: 0; }
+  .section-head h2 { margin: 0; font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
+  .section-head p { margin: 0; font-size: 13px; color: var(--ink-3); }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius-surface); padding: 20px;
+  }
+  .card-title { margin: 0; font-size: 14px; font-weight: 600; color: var(--ink); }
+  .card-sub { margin: 2px 0 0; font-size: 12px; color: var(--ink-3); }
+  .card-head {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 12px; margin-bottom: 18px; flex-wrap: wrap;
+  }
+
+  /* ---------- Account strip ---------- */
+  .account-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .account-card { padding: 16px 18px; }
+  .account-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .account-label { margin: 0; font-size: 13px; font-weight: 500; color: var(--ink-3); }
+  .account-icon {
+    width: 34px; height: 34px; border-radius: var(--radius-surface);
+    background: var(--surface-muted); color: var(--ink-3);
+    display: grid; place-items: center; flex: none;
+  }
+  .account-value { margin: 10px 0 0; font-size: 20px; font-weight: 700; letter-spacing: -0.01em; }
+  .account-meta { margin: 4px 0 0; font-size: 12px; color: var(--ink-3); display: flex; align-items: center; gap: 6px; }
+
+  .status-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 2px 9px; border-radius: 999px; font-size: 11px; font-weight: 600;
+  }
+  .status-pill .dot { width: 6px; height: 6px; border-radius: 999px; flex: none; }
+  .status-pill.ok { background: var(--success-subtle); color: var(--success-strong); }
+  .status-pill.ok .dot { background: var(--success); }
+  .status-pill.bad { background: var(--danger-subtle); color: var(--danger-strong); }
+  .status-pill.bad .dot { background: var(--danger); }
+  .status-pill.pending { background: var(--primary-subtle); color: var(--primary-hover); }
+  .status-pill.pending .dot { background: var(--primary); }
+
+  /* ---------- KPI strip ---------- */
+  .kpi-grid { display: grid; grid-template-columns: 1.6fr repeat(4, 1fr); gap: 16px; }
+  .kpi-label { margin: 0; font-size: 13px; font-weight: 500; color: var(--ink-3); }
+  .kpi-value { margin: 10px 0 0; font-size: 30px; font-weight: 700; letter-spacing: -0.02em; line-height: 1; }
+  .kpi-value small { font-size: 13px; font-weight: 500; color: var(--ink-3); letter-spacing: 0; margin-left: 4px; }
+  .kpi-caption { margin: 10px 0 0; font-size: 12px; color: var(--ink-4); }
+  .kpi-caption strong { color: var(--ink-3); font-weight: 500; }
+
+  .delta {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 8px; border-radius: 999px;
+    background: var(--success-subtle); color: var(--success-strong);
+    font-size: 12px; font-weight: 600; white-space: nowrap;
+  }
+  .delta.down { background: var(--danger-subtle); color: var(--danger-strong); }
+
+  .kpi-mda-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 4px; }
+  .metric-block .kpi-value { font-size: 24px; margin-top: 0; }
+  .metric-block .delta { margin-top: 10px; }
+  .metric-split { border-left: 1px solid var(--line); padding-left: 18px; }
+
+  .ratio {
+    display: flex; height: 6px; border-radius: 999px;
+    overflow: hidden; background: var(--surface-muted); margin-top: 14px;
+  }
+  .ratio > span { display: block; height: 100%; }
+  .ratio .ok { background: var(--success); }
+  .ratio .fail { background: var(--danger); }
+  .value-card .kpi-value { font-size: 26px; }
+
+  /* ---------- Charts ---------- */
+  .grid-charts { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-top: 16px; }
+  .grid-brand { display: grid; grid-template-columns: 1fr 1.7fr; gap: 16px; margin-top: 16px; }
+
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--ink-3); }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend i { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
+  .legend i.line { width: 14px; height: 2px; border-radius: 1px; }
+
+  .combo-host { width: 100%; position: relative; }
+  .combo-host svg { display: block; width: 100%; }
+  .axis-text { fill: var(--ink-4); font-size: 10px; }
+  .axis-title { fill: var(--ink-4); font-size: 9px; font-weight: 600; }
+  .grid-line { stroke: var(--line); stroke-width: 1; }
+  .bar-ok { fill: var(--success); }
+  .bar-fail { fill: var(--danger); }
+  .value-line { fill: none; stroke: var(--primary); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+  .value-dot { fill: var(--surface); stroke: var(--primary); stroke-width: 2; }
+  .hover-dot { opacity: 0; pointer-events: none; }
+  .bar-group:hover rect { opacity: 0.82; }
+  .chart-tooltip {
+    position: absolute;
+    z-index: 5;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(-50%, -100%);
+    background: var(--ink);
+    color: #fff;
+    padding: 5px 8px;
+    border-radius: var(--radius-control);
+    font-size: 11px;
+    line-height: 1.35;
+    white-space: nowrap;
+    transition: opacity 0.12s ease;
+  }
+  .chart-tooltip.show { opacity: 1; }
+  .chart-foot { margin: 10px 0 0; font-size: 12px; color: var(--ink-4); }
+  .data-toggle {
+    margin-top: 6px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--primary);
+    cursor: pointer;
+  }
+  .data-toggle:hover { color: var(--primary-hover); text-decoration: underline; }
+  .data-toggle:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 3px; }
+  .chart-data { margin-top: 12px; }
+  .chart-data[hidden] { display: none; }
+  .chart-data.scroll { max-height: 220px; overflow-y: auto; padding-right: 4px; }
+
+  .mini-toggle {
+    display: inline-flex; gap: 2px; padding: 2px;
+    border: 1px solid var(--line); border-radius: var(--radius-control);
+    background: var(--surface);
+  }
+  .mini-toggle button {
+    border: 0; background: transparent; padding: 3px 8px;
+    border-radius: 4px; font-size: 11px; font-weight: 600;
+    color: var(--ink-3); cursor: pointer;
+  }
+  .mini-toggle button.active { background: var(--primary-subtle); color: var(--primary-hover); }
+  .mini-toggle button:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+
+  .month-chart {
+    position: relative; height: 150px; display: flex; align-items: flex-end;
+    gap: 10px; border-bottom: 1px solid var(--line); padding-top: 20px;
+  }
+  .month {
+    flex: 1; height: 100%; display: flex; flex-direction: column;
+    align-items: center; justify-content: flex-end; gap: 6px; min-width: 0;
+  }
+  .month .val { font-size: 11px; font-weight: 600; color: var(--ink-3); white-space: nowrap; }
+  .month .bar {
+    width: 100%; max-width: 34px; background: var(--line-strong);
+    border-radius: 3px 3px 0 0; transform-origin: bottom;
+    animation: grow 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  .month.current .bar { background: var(--primary); }
+  .month.current .val { color: var(--primary-hover); }
+  .month-labels { display: flex; gap: 10px; margin-top: 6px; }
+  .month-labels span { flex: 1; text-align: center; font-size: 11px; color: var(--ink-4); }
+  .month-labels span.current { color: var(--ink-2); font-weight: 600; }
+  @keyframes grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+
+  /* ---------- Brand performance ---------- */
+  .brand-row { padding: 13px 0; border-bottom: 1px solid var(--line); }
+  .brand-row:first-child { padding-top: 0; }
+  .brand-row:last-child { border-bottom: 0; padding-bottom: 0; }
+  .brand-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .brand-name { font-size: 13px; font-weight: 600; color: var(--ink); }
+  .brand-totals { font-size: 11px; color: var(--ink-3); }
+  .duo-row {
+    display: grid; grid-template-columns: 74px minmax(0, 1fr) 34px;
+    gap: 8px; align-items: center; margin-top: 7px; font-size: 11px;
+  }
+  .duo-label { color: var(--ink-3); }
+  .duo-val { text-align: right; color: var(--ink-3); }
+  .track { height: 6px; background: var(--surface-muted); border-radius: 999px; overflow: hidden; }
+  .fill { display: block; height: 100%; border-radius: 999px; }
+
+  /* ---------- Transaction performance ---------- */
+  .tp-row { padding: 13px 0; border-bottom: 1px solid var(--line); }
+  .tp-row:first-child { padding-top: 0; }
+  .tp-row:last-child { border-bottom: 0; padding-bottom: 0; }
+  .tp-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .tp-name { font-size: 13px; font-weight: 600; color: var(--ink); }
+  .tp-nums { font-size: 12px; color: var(--ink-3); text-align: right; white-space: nowrap; }
+  .tp-nums strong { color: var(--ink); font-weight: 600; }
+  .compose {
+    display: flex; height: 6px; margin-top: 9px;
+    border-radius: 999px; overflow: hidden; background: var(--surface-muted);
+  }
+  .compose span { display: block; height: 100%; }
+  .brand-mini { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 7px; font-size: 11px; color: var(--ink-3); }
+  .brand-mini span { display: inline-flex; align-items: center; gap: 5px; }
+  .brand-mini i { width: 6px; height: 6px; border-radius: 2px; display: inline-block; }
+
+  /* ---------- Top products ---------- */
+  .select {
+    appearance: none;
+    background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 9px center;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-control);
+    padding: 6px 28px 6px 10px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-2);
+    cursor: pointer;
+  }
+  .select:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+  .filters { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .filters span { font-size: 12px; color: var(--ink-3); }
+
+  .prod-row {
+    display: grid; grid-template-columns: 22px minmax(0, 1fr) auto;
+    gap: 12px; align-items: center; padding: 11px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .prod-row:first-child { padding-top: 0; }
+  .prod-row:last-child { border-bottom: 0; padding-bottom: 0; }
+  .rank { font-size: 12px; font-weight: 600; color: var(--ink-4); }
+  .prod-name { font-size: 13px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .prod-type { font-size: 11px; color: var(--ink-3); margin-top: 1px; }
+  .bar-track { height: 4px; background: var(--surface-muted); border-radius: 999px; overflow: hidden; margin-top: 6px; }
+  .bar-fill { height: 100%; background: var(--primary); border-radius: 999px; }
+  .prod-right { text-align: right; white-space: nowrap; }
+  .prod-count { font-size: 13px; font-weight: 600; color: var(--ink); }
+  .prod-value { font-size: 11px; color: var(--ink-3); margin-top: 1px; }
+  .empty-state { margin: 0; padding: 24px 0; text-align: center; font-size: 13px; color: var(--ink-4); }
+
+  /* ---------- Tables ---------- */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .data-table th {
+    text-align: left; padding: 0 12px 8px 0; border-bottom: 1px solid var(--line);
+    font-size: 11px; font-weight: 600; letter-spacing: 0.05em;
+    text-transform: uppercase; color: var(--ink-3); white-space: nowrap;
+  }
+  .data-table th:last-child, .data-table td:last-child { padding-right: 0; text-align: right; }
+  .data-table td {
+    padding: 11px 12px 11px 0; border-bottom: 1px solid var(--line);
+    color: var(--ink-2); vertical-align: middle;
+  }
+  .data-table tbody tr:last-child td { border-bottom: 0; padding-bottom: 0; }
+  .data-table tbody tr:first-child td { padding-top: 10px; }
+  .data-table tbody tr:hover td { background: var(--canvas); }
+  .data-table .strong { font-weight: 600; color: var(--ink); }
+  .data-table .muted { color: var(--ink-3); }
+  .data-table .amount { font-weight: 600; color: var(--ink); text-align: right; white-space: nowrap; }
+  .data-table .when { color: var(--ink-3); font-size: 12px; text-align: right; white-space: nowrap; }
+  .data-table .when small { display: block; color: var(--ink-4); font-size: 11px; }
+  .data-table .sub { display: block; font-size: 11px; font-weight: 400; color: var(--ink-3); }
+  .data-table a { text-decoration: none; }
+  .data-table a:hover .strong { color: var(--primary-hover); }
+  .data-table a:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 4px; }
+  .data-table.compact th { padding: 0 8px 6px 0; font-size: 10px; }
+  .data-table.compact td { padding: 6px 8px 6px 0; font-size: 12px; }
+  .data-table.compact tbody tr:first-child td { padding-top: 6px; }
+  .data-table.compact tbody tr:last-child td { padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+  .data-table.compact tfoot td { padding: 7px 8px 0 0; border-bottom: 0; font-weight: 600; color: var(--ink); }
+  .data-table.compact tfoot td:last-child { text-align: right; }
+
+  .empty-note {
+    margin-top: 24px; padding: 12px 14px;
+    border: 1px dashed var(--line-strong); border-radius: var(--radius-surface);
+    font-size: 12px; color: var(--ink-3); background: var(--surface);
+  }
+  .empty-note strong { color: var(--ink-2); font-weight: 600; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .month .bar { animation: none; }
+  }
+
+  @media (max-width: 1180px) {
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .kpi-grid .mda-card { grid-column: 1 / -1; }
+  }
+  @media (max-width: 1024px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; }
+    .container { padding: 24px 20px; }
+    .grid-charts, .grid-brand { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 720px) {
+    .account-grid { grid-template-columns: 1fr; }
+    .kpi-grid { grid-template-columns: 1fr; }
+    .kpi-mda-grid { grid-template-columns: 1fr; gap: 14px; }
+    .metric-split { border-left: 0; padding-left: 0; border-top: 1px solid var(--line); padding-top: 14px; }
+    .page-head { align-items: stretch; }
+    .head-controls { width: 100%; justify-content: space-between; }
+    .segmented { overflow-x: auto; max-width: 100%; }
+    .data-table th:nth-child(2), .data-table td:nth-child(2) { display: none; }
+    .data-table th:nth-child(4), .data-table td:nth-child(4) { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="brand">
+    <span class="brand-mark">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+        <path d="M2 10h20"></path>
+      </svg>
+    </span>
+    <span class="brand-title">Transaction Dashboard</span>
+  </div>
+
+  <nav class="nav" aria-label="Main navigation">
+    <div class="nav-group">
+      <p class="nav-group-title">Main</p>
+      <a href="#" class="active" aria-current="page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></svg>
+        Dashboard
+      </a>
+    </div>
+
+    <div class="nav-group">
+      <p class="nav-group-title">Transactions</p>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2"></rect><path d="M11 18h2"></path></svg> Buy Pulsa</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8l-9-5-9 5 9 5 9-5z"></path><path d="M3 8v8l9 5 9-5V8"></path></svg> Data Package</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"></path></svg> Cocktail SF</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="M7 10l5 5 5-5"></path><path d="M12 15V3"></path></svg> Package Injection</a>
+    </div>
+
+    <div class="nav-group">
+      <p class="nav-group-title">Digital Stock</p>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l9 5-9 5-9-5 9-5z"></path><path d="M3 12l9 5 9-5"></path><path d="M3 17l9 5 9-5"></path></svg> Stock</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg> Stock History</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg> Transaction Info</a>
+    </div>
+
+    <div class="nav-group">
+      <p class="nav-group-title">Management</p>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="1"></rect><rect x="13" y="3" width="8" height="8" rx="1"></rect><rect x="3" y="13" width="8" height="8" rx="1"></rect><rect x="13" y="13" width="8" height="8" rx="1"></rect></svg> Products</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg> History</a>
+    </div>
+
+    <div class="nav-group">
+      <p class="nav-group-title">System</p>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19 12a7 7 0 0 0-.1-1l2-1.5-2-3.4-2.3 1a7 7 0 0 0-1.7-1L14.5 3h-5l-.4 3.1a7 7 0 0 0-1.7 1l-2.3-1-2 3.4L5.1 11a7 7 0 0 0 0 2l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 1.7 1l.4 3.1h5l.4-3.1a7 7 0 0 0 1.7-1l2.3 1 2-3.4-2-1.5a7 7 0 0 0 .1-1z"></path></svg> API Config</a>
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <span class="avatar">A</span>
+    <span class="who">admin</span>
+    <button class="icon-btn" aria-label="Log out">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="M16 17l5-5-5-5"></path><path d="M21 12H9"></path></svg>
+    </button>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="container">
+
+    <div class="page-head">
+      <div>
+        <h1>Dashboard</h1>
+        <p class="subtitle">Non-digital stock performance, balances, and recent activity.</p>
+      </div>
+      <div class="head-controls">
+        <span class="chip sample">Sample data</span>
+        <div class="segmented" role="group" aria-label="Date range">
+          <button type="button">7 days</button>
+          <button type="button" class="active" aria-pressed="true">30 days</button>
+          <button type="button">90 days</button>
+          <button type="button">This month</button>
+        </div>
+        <button type="button" class="btn-ghost">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"></path><path d="M21 3v6h-6"></path></svg>
+          Refresh
+        </button>
+      </div>
+    </div>
+
+    <div class="account-grid">
+      <div class="card account-card">
+        <div class="account-top">
+          <p class="account-label">Saldo Eload</p>
+          <span class="account-icon">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"></path></svg>
+          </span>
+        </div>
+        <p class="account-value tnum">Rp 6.996</p>
+        <p class="account-meta">Updated 2 min ago</p>
+      </div>
+
+      <div class="card account-card">
+        <div class="account-top">
+          <p class="account-label">Saldo Dompul</p>
+          <span class="account-icon">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"></rect><path d="M2 10h20"></path></svg>
+          </span>
+        </div>
+        <p class="account-value tnum">Rp 17.003</p>
+        <p class="account-meta">Updated 2 min ago</p>
+      </div>
+
+      <div class="card account-card">
+        <div class="account-top">
+          <p class="account-label">API token</p>
+          <span class="status-pill ok"><span class="dot"></span>Active</span>
+        </div>
+        <p class="account-value tnum" style="font-size: 16px;">Expires 4 Nov 2026, 22:27</p>
+        <p class="account-meta">
+          <a href="#" style="color: var(--primary); font-weight: 500; text-decoration: none;">Refresh token</a>
+        </p>
+      </div>
+    </div>
+
+    <div class="section-head">
+      <h2>Non-digital stock</h2>
+      <span class="chip">MVP1</span>
+      <p>Buy pulsa, data packages, and injections — everything except digital stock.</p>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="card mda-card">
+        <p class="kpi-label">MDA · Monthly daily average</p>
+        <div class="kpi-mda-grid">
+          <div class="metric-block">
+            <p class="kpi-value tnum">3.0<small>trx/day</small></p>
+            <span class="delta" title="October: 1.0 trx/day">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5"></path><path d="M5 12l7-7 7 7"></path></svg>
+              +2.0/day vs Oct
+            </span>
+          </div>
+          <div class="metric-block metric-split">
+            <p class="kpi-value tnum">Rp 18.250<small>/day</small></p>
+            <span class="delta" title="October: Rp 6.016/day">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5"></path><path d="M5 12l7-7 7 7"></path></svg>
+              +12.234/day vs Oct
+            </span>
+          </div>
+        </div>
+        <p class="kpi-caption"><strong>12 transactions · Rp 73.000</strong> across 4 elapsed days in Nov</p>
+      </div>
+
+      <div class="card">
+        <p class="kpi-label">Success rate</p>
+        <p class="kpi-value tnum">95.2%</p>
+        <div class="ratio" role="img" aria-label="95.2 percent success, 4.8 percent failed">
+          <span class="ok" style="width: 95.2%;"></span>
+          <span class="fail" style="width: 4.8%;"></span>
+        </div>
+        <p class="kpi-caption"><strong>40 of 42</strong> transactions succeeded</p>
+      </div>
+
+      <div class="card">
+        <p class="kpi-label">Error rate</p>
+        <p class="kpi-value tnum">4.8%</p>
+        <div class="ratio" role="img" aria-label="4.8 percent failed">
+          <span class="fail" style="width: 4.8%;"></span>
+          <span style="width: 95.2%; background: var(--surface-muted);"></span>
+        </div>
+        <p class="kpi-caption"><strong>2 failed</strong> · 0 still processing</p>
+      </div>
+
+      <div class="card value-card">
+        <p class="kpi-label">Transaction amount</p>
+        <p class="kpi-value tnum">Rp 259.500</p>
+        <p class="kpi-caption" style="margin-top: 14px;"><strong>40 successful</strong> · avg Rp 6.488</p>
+      </div>
+
+      <div class="card">
+        <p class="kpi-label">Transactions</p>
+        <p class="kpi-value tnum">42</p>
+        <p class="kpi-caption" style="margin-top: 14px;"><strong>1.4/day</strong> over 30 days</p>
+      </div>
+    </div>
+
+    <div class="grid-charts">
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <h2 class="card-title">Daily volume</h2>
+            <p class="card-sub">Transaction count with successful value, last 30 days</p>
+          </div>
+          <div class="legend">
+            <span><i style="background: var(--success);"></i>Success</span>
+            <span><i style="background: var(--danger);"></i>Failed</span>
+            <span><i class="line" style="background: var(--primary);"></i>Value</span>
+          </div>
+        </div>
+        <div class="combo-host" id="dailyCombo" role="img" aria-label="Daily transaction count and successful value"></div>
+        <p class="chart-foot">Bars: transactions (left axis). Line: successful value (right axis).</p>
+        <button type="button" class="data-toggle" aria-expanded="false" aria-controls="dailyData">Show data</button>
+        <div class="chart-data scroll" id="dailyData" hidden></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head" style="margin-bottom: 8px;">
+          <div>
+            <h2 class="card-title">MDA by month</h2>
+            <p class="card-sub">Average per day</p>
+          </div>
+          <div class="mini-toggle" id="mdaToggle" role="group" aria-label="MDA metric">
+            <button type="button" class="active" data-metric="trx" aria-pressed="true">Trx/day</button>
+            <button type="button" data-metric="value" aria-pressed="false">Value/day</button>
+          </div>
+        </div>
+        <div class="month-chart" id="monthChart" role="img" aria-label="Monthly daily average from June to November"></div>
+        <div class="month-labels" id="monthLabels" aria-hidden="true"></div>
+        <p class="chart-foot">November covers 4 elapsed days.</p>
+        <button type="button" class="data-toggle" aria-expanded="false" aria-controls="monthlyData">Show data</button>
+        <div class="chart-data" id="monthlyData" hidden></div>
+      </div>
+    </div>
+
+    <div class="grid-brand">
+      <div class="card">
+        <div class="card-head" style="margin-bottom: 14px;">
+          <div>
+            <h2 class="card-title">Brand performance</h2>
+            <p class="card-sub">Share of total transactions vs share of total value</p>
+          </div>
+        </div>
+        <div id="brandList"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head" style="margin-bottom: 14px;">
+          <div>
+            <h2 class="card-title">Transaction performance</h2>
+            <p class="card-sub">Count, value, and brand mix per type</p>
+          </div>
+          <div class="mini-toggle" role="group" aria-label="Brand mix metric">
+            <button type="button" class="active" data-tp-metric="count" aria-pressed="true">Count</button>
+            <button type="button" data-tp-metric="value" aria-pressed="false">Value</button>
+          </div>
+        </div>
+        <div id="typeList"></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top: 16px;">
+      <div class="card-head">
+        <div>
+          <h2 class="card-title">Top products</h2>
+          <p class="card-sub" id="tpMeta">Buy Pulsa · SF</p>
+        </div>
+        <div class="filters">
+          <span>Type</span>
+          <select class="select" id="tpType" aria-label="Transaction type">
+            <option value="buy_pulsa">Buy Pulsa</option>
+            <option value="buy_data_package">Data Package</option>
+            <option value="package_injection">Package Injection</option>
+            <option value="cocktail_sf">Cocktail SF</option>
+          </select>
+          <span>Brand</span>
+          <select class="select" id="tpBrand" aria-label="Brand">
+            <option value="all">All brands</option>
+            <option value="SF">SF</option>
+            <option value="XL">XL</option>
+            <option value="AXIS">AXIS</option>
+          </select>
+        </div>
+      </div>
+      <div id="topProductsList"></div>
+    </div>
+
+    <div class="section-head">
+      <h2>Latest transactions</h2>
+      <p>Newest first, from your local ledger.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-head" style="margin-bottom: 8px;">
+        <div></div>
+        <div style="display: flex; gap: 8px;">
+          <button type="button" class="btn-ghost">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"></path><path d="M21 3v6h-6"></path></svg>
+            Refresh
+          </button>
+          <a href="#" class="btn-ghost" style="text-decoration: none;">View all →</a>
+        </div>
+      </div>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>MSISDN</th>
+            <th>Status</th>
+            <th>Amount</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><a href="#"><span class="strong">Buy Pulsa</span><span class="sub">—</span></a></td>
+            <td class="tnum muted">6287780490505</td>
+            <td><span class="status-pill ok"><span class="dot"></span>Success</span></td>
+            <td class="amount tnum">Rp 5.000</td>
+            <td class="when">2 Nov 2026<small>21:50</small></td>
+          </tr>
+          <tr>
+            <td><a href="#"><span class="strong">w2p_sf</span><span class="sub">—</span></a></td>
+            <td class="tnum muted">6288989493439</td>
+            <td><span class="status-pill bad"><span class="dot"></span>Failed</span></td>
+            <td class="amount tnum">Rp 5.000</td>
+            <td class="when">18 Oct 2026<small>05:57</small></td>
+          </tr>
+          <tr>
+            <td><a href="#"><span class="strong">Data Package</span><span class="sub">Kombo SushiRoll 1GB</span></a></td>
+            <td class="tnum muted">6288989493439</td>
+            <td><span class="status-pill ok"><span class="dot"></span>Success</span></td>
+            <td class="amount tnum">Rp 3.500</td>
+            <td class="when">18 Oct 2026<small>00:46</small></td>
+          </tr>
+          <tr>
+            <td><a href="#"><span class="strong">Data Package</span><span class="sub">Kombo Genflix 700mb</span></a></td>
+            <td class="tnum muted">6288989493439</td>
+            <td><span class="status-pill ok"><span class="dot"></span>Success</span></td>
+            <td class="amount tnum">Rp 3.000</td>
+            <td class="when">17 Oct 2026<small>23:39</small></td>
+          </tr>
+          <tr>
+            <td><a href="#"><span class="strong">Buy Pulsa</span><span class="sub">—</span></a></td>
+            <td class="tnum muted">6288989493439</td>
+            <td><span class="status-pill ok"><span class="dot"></span>Success</span></td>
+            <td class="amount tnum">Rp 2.001</td>
+            <td class="when">17 Oct 2026<small>23:31</small></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="empty-note">
+      <strong>Preview note.</strong> Sample data is used so rankings and rates are meaningful. On a live account with few transactions, most panels show an empty state instead of zeroes. Brand comes from the product catalog (<em>owner</em>) joined on product code; value is only counted where the provider recorded an amount, and <em>Processing</em> is excluded from the error rate.
+    </p>
+
+  </div>
+</main>
+
+<script>
+  (function () {
+    var TYPE_LABELS = {
+      buy_pulsa: 'Buy Pulsa',
+      buy_data_package: 'Data Package',
+      package_injection: 'Package Injection',
+      cocktail_sf: 'Cocktail SF'
+    };
+    var TYPE_ORDER = ['buy_pulsa', 'buy_data_package', 'package_injection', 'cocktail_sf'];
+    var BRANDS = ['SF', 'XL', 'AXIS'];
+    var BRAND_COLORS = { SF: '#1D4ED8', XL: '#0EA5E9', AXIS: '#94A3B8' };
+
+    var PRODUCTS = [
+      { name: 'Pulsa 25.000', type: 'buy_pulsa', brand: 'SF', count: 2, value: 50000 },
+      { name: 'Pulsa 10.000', type: 'buy_pulsa', brand: 'SF', count: 3, value: 30000 },
+      { name: 'Pulsa 5.000', type: 'buy_pulsa', brand: 'SF', count: 2, value: 10000 },
+      { name: 'Pulsa 2.000', type: 'buy_pulsa', brand: 'SF', count: 5, value: 10000 },
+
+      { name: 'XL 20.000', type: 'buy_pulsa', brand: 'XL', count: 1, value: 20000 },
+      { name: 'XL 10.000', type: 'buy_pulsa', brand: 'XL', count: 3, value: 30000 },
+      { name: 'XL 5.000', type: 'buy_pulsa', brand: 'XL', count: 2, value: 10000 },
+      { name: 'XL 2.000', type: 'buy_pulsa', brand: 'XL', count: 2, value: 4000 },
+
+      { name: 'AXIS 10.000', type: 'buy_pulsa', brand: 'AXIS', count: 2, value: 20000 },
+      { name: 'AXIS 5.000', type: 'buy_pulsa', brand: 'AXIS', count: 2, value: 10000 },
+      { name: 'AXIS 2.000', type: 'buy_pulsa', brand: 'AXIS', count: 2, value: 4000 },
+
+      { name: 'Kombo SushiRoll 1GB', type: 'buy_data_package', brand: 'SF', count: 2, value: 7000 },
+      { name: 'Kombo Genflix 700mb', type: 'buy_data_package', brand: 'SF', count: 2, value: 6000 },
+      { name: 'Kombo Hooq 1GB', type: 'buy_data_package', brand: 'SF', count: 1, value: 4500 },
+
+      { name: 'Kombo SushiRoll 1GB', type: 'buy_data_package', brand: 'XL', count: 2, value: 7000 },
+      { name: 'Kombo Genflix 700mb', type: 'buy_data_package', brand: 'XL', count: 2, value: 6000 },
+      { name: 'Kombo Vidio 1GB', type: 'buy_data_package', brand: 'XL', count: 1, value: 4000 },
+
+      { name: 'Kombo SushiRoll 1GB', type: 'buy_data_package', brand: 'AXIS', count: 1, value: 3500 },
+      { name: 'Kombo Genflix 700mb', type: 'buy_data_package', brand: 'AXIS', count: 1, value: 3000 },
+      { name: 'Kombo Hooq 1GB', type: 'buy_data_package', brand: 'AXIS', count: 1, value: 3500 },
+
+      { name: 'Injection SP 5.000', type: 'package_injection', brand: 'SF', count: 1, value: 6000 },
+      { name: 'Injection SP 5.000', type: 'package_injection', brand: 'XL', count: 1, value: 6000 },
+
+      { name: 'Cocktail SF 1GB', type: 'cocktail_sf', brand: 'SF', count: 1, value: 5000 }
+    ];
+
+    var DAILY = [
+      { d: '6', m: 'Oct', s: 0, f: 0, v: 0 },
+      { d: '7', m: 'Oct', s: 1, f: 0, v: 5000 },
+      { d: '8', m: 'Oct', s: 0, f: 0, v: 0 },
+      { d: '9', m: 'Oct', s: 2, f: 0, v: 13000 },
+      { d: '10', m: 'Oct', s: 0, f: 1, v: 0 },
+      { d: '11', m: 'Oct', s: 1, f: 0, v: 3000 },
+      { d: '12', m: 'Oct', s: 0, f: 0, v: 0 },
+      { d: '13', m: 'Oct', s: 1, f: 0, v: 6500 },
+      { d: '14', m: 'Oct', s: 0, f: 0, v: 0 },
+      { d: '15', m: 'Oct', s: 1, f: 0, v: 3500 },
+      { d: '16', m: 'Oct', s: 2, f: 0, v: 12000 },
+      { d: '17', m: 'Oct', s: 2, f: 0, v: 15000 },
+      { d: '18', m: 'Oct', s: 2, f: 1, v: 10000 },
+      { d: '19', m: 'Oct', s: 1, f: 0, v: 6000 },
+      { d: '20', m: 'Oct', s: 0, f: 0, v: 0 },
+      { d: '21', m: 'Oct', s: 3, f: 0, v: 27000 },
+      { d: '22', m: 'Oct', s: 2, f: 0, v: 12000 },
+      { d: '23', m: 'Oct', s: 0, f: 0, v: 0 },
+      { d: '24', m: 'Oct', s: 1, f: 0, v: 4000 },
+      { d: '25', m: 'Oct', s: 0, f: 0, v: 0 },
+      { d: '26', m: 'Oct', s: 3, f: 0, v: 28000 },
+      { d: '27', m: 'Oct', s: 1, f: 0, v: 8000 },
+      { d: '28', m: 'Oct', s: 0, f: 0, v: 0 },
+      { d: '29', m: 'Oct', s: 3, f: 0, v: 22500 },
+      { d: '30', m: 'Oct', s: 1, f: 0, v: 6000 },
+      { d: '31', m: 'Oct', s: 1, f: 0, v: 5000 },
+      { d: '1', m: 'Nov', s: 2, f: 0, v: 10000 },
+      { d: '2', m: 'Nov', s: 4, f: 0, v: 26000 },
+      { d: '3', m: 'Nov', s: 3, f: 0, v: 18000 },
+      { d: '4', m: 'Nov', s: 3, f: 0, v: 19000 }
+    ];
+
+    function formatIDR(n) {
+      return 'Rp ' + new Intl.NumberFormat('id-ID').format(n);
+    }
+    function sumBy(rows, key) {
+      return rows.reduce(function (a, r) { return a + r[key]; }, 0);
+    }
+    function svgEl(name, attrs) {
+      var el = document.createElementNS('http://www.w3.org/2000/svg', name);
+      for (var k in attrs) el.setAttribute(k, attrs[k]);
+      return el;
+    }
+
+    /* ----- Daily combo chart: bars = count, line = value ----- */
+    function renderDailyCombo() {
+      var host = document.getElementById('dailyCombo');
+      if (!host) return;
+      var W = host.clientWidth || 640;
+      var H = 200;
+      host.innerHTML = '';
+
+      var svg = svgEl('svg', {
+        width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H,
+        role: 'img', 'aria-label': 'Daily transaction count and successful value'
+      });
+      var m = { l: 28, r: 50, t: 18, b: 26 };
+      var pw = W - m.l - m.r;
+      var ph = H - m.t - m.b;
+      var maxTrx = 5;
+      var maxVal = 30000;
+
+      var trxTitle = svgEl('text', { x: m.l - 8, y: 9, 'class': 'axis-title', 'text-anchor': 'end' });
+      trxTitle.textContent = 'trx';
+      svg.appendChild(trxTitle);
+
+      var valTitle = svgEl('text', { x: m.l + pw + 8, y: 9, 'class': 'axis-title' });
+      valTitle.textContent = 'Rp';
+      svg.appendChild(valTitle);
+
+      [0, 2, 4].forEach(function (t) {
+        var y = m.t + ph - (t / maxTrx) * ph;
+        svg.appendChild(svgEl('line', { x1: m.l, y1: y, x2: m.l + pw, y2: y, 'class': 'grid-line' }));
+        var lb = svgEl('text', { x: m.l - 8, y: y + 3, 'class': 'axis-text', 'text-anchor': 'end' });
+        lb.textContent = t;
+        svg.appendChild(lb);
+      });
+
+      [0, 10000, 20000, 30000].forEach(function (v) {
+        var y = m.t + ph - (v / maxVal) * ph;
+        var lb = svgEl('text', { x: m.l + pw + 8, y: y + 3, 'class': 'axis-text' });
+        lb.textContent = v === 0 ? 'Rp 0' : (v / 1000) + 'k';
+        svg.appendChild(lb);
+      });
+
+      var groupW = pw / DAILY.length;
+      var barW = Math.max(3, Math.min(14, groupW * 0.55));
+      var points = [];
+      var centers = [];
+
+      DAILY.forEach(function (d, i) {
+        var cx = m.l + groupW * i + groupW / 2;
+        var baseY = m.t + ph;
+        var hOk = (d.s / maxTrx) * ph;
+        var hFail = (d.f / maxTrx) * ph;
+
+        var g = svgEl('g', { 'class': 'bar-group' });
+        var title = svgEl('title', {});
+        title.textContent = d.d + ' ' + d.m + ': ' + d.s + ' success' +
+          (d.f ? ', ' + d.f + ' failed' : '') + ' · ' + formatIDR(d.v);
+        g.appendChild(title);
+
+        if (d.s) {
+          g.appendChild(svgEl('rect', {
+            x: cx - barW / 2, y: baseY - hOk, width: barW, height: hOk,
+            rx: 1, 'class': 'bar-ok'
+          }));
+        }
+        if (d.f) {
+          g.appendChild(svgEl('rect', {
+            x: cx - barW / 2, y: baseY - hOk - hFail, width: barW, height: hFail,
+            rx: 1, 'class': 'bar-fail'
+          }));
+        }
+        svg.appendChild(g);
+
+        var vy = m.t + ph - (d.v / maxVal) * ph;
+        points.push(cx + ',' + vy);
+        centers.push({ cx: cx, vy: vy });
+      });
+
+      svg.appendChild(svgEl('polyline', { points: points.join(' '), 'class': 'value-line' }));
+
+      var hoverDot = svgEl('circle', { cx: 0, cy: 0, r: 3.2, 'class': 'value-dot hover-dot' });
+      svg.appendChild(hoverDot);
+
+      var NOV_START = 26;
+
+      DAILY.forEach(function (d, i) {
+        var show = i === 0 || i % 5 === 0 || i === NOV_START || i === DAILY.length - 1;
+        if (!show) return;
+
+        var label = d.d;
+        if (i === 0 || i === 25) label = d.d + ' Oct';
+        else if (i === NOV_START) label = d.d + ' Nov';
+        else if (i === DAILY.length - 1) label = d.d + ' ' + d.m;
+
+        var t = svgEl('text', {
+          x: m.l + groupW * i + groupW / 2, y: H - 7,
+          'class': 'axis-text', 'text-anchor': 'middle'
+        });
+        t.textContent = label;
+        svg.appendChild(t);
+      });
+
+      var tip = document.createElement('div');
+      tip.className = 'chart-tooltip';
+      host.appendChild(tip);
+      host.appendChild(svg);
+
+      svg.addEventListener('mousemove', function (e) {
+        var rect = svg.getBoundingClientRect();
+        var scaleX = W / rect.width;
+        var x = (e.clientX - rect.left) * scaleX;
+        var i = Math.floor((x - m.l) / groupW);
+
+        if (i < 0 || i >= DAILY.length) {
+          hoverDot.style.opacity = 0;
+          tip.classList.remove('show');
+          return;
+        }
+
+        var d = DAILY[i];
+        var c = centers[i];
+        hoverDot.setAttribute('cx', c.cx);
+        hoverDot.setAttribute('cy', c.vy);
+        hoverDot.style.opacity = 1;
+
+        tip.textContent = d.d + ' ' + d.m + ' · ' + d.s + ' success' +
+          (d.f ? ' · ' + d.f + ' failed' : '') + ' · ' + formatIDR(d.v);
+
+        var scaleY = rect.height / H;
+        tip.style.left = Math.max(100, Math.min(rect.width - 100, c.cx / scaleX)) + 'px';
+        tip.style.top = (c.vy * scaleY - 8) + 'px';
+        tip.classList.add('show');
+      });
+
+      svg.addEventListener('mouseleave', function () {
+        hoverDot.style.opacity = 0;
+        tip.classList.remove('show');
+      });
+    }
+
+    /* ----- MDA by month, toggles between trx/day and value/day ----- */
+    var MONTHS = [
+      { m: 'Jun', trx: 0.6, value: 2100 },
+      { m: 'Jul', trx: 0.8, value: 3000 },
+      { m: 'Aug', trx: 0.9, value: 3400 },
+      { m: 'Sep', trx: 1.1, value: 4200 },
+      { m: 'Oct', trx: 1.0, value: 6000 },
+      { m: 'Nov', trx: 3.0, value: 18250 }
+    ];
+
+    function renderMonths(metric) {
+      var chart = document.getElementById('monthChart');
+      var labels = document.getElementById('monthLabels');
+      if (!chart || !labels) return;
+      chart.innerHTML = '';
+      labels.innerHTML = '';
+
+      var max = metric === 'trx' ? 3.0 : 20000;
+
+      MONTHS.forEach(function (item, i) {
+        var isCurrent = i === MONTHS.length - 1;
+        var v = item[metric];
+
+        var wrap = document.createElement('div');
+        wrap.className = 'month' + (isCurrent ? ' current' : '');
+        wrap.title = item.m + ': ' + (metric === 'trx'
+          ? v.toFixed(1) + ' trx/day'
+          : formatIDR(v) + '/day');
+
+        var val = document.createElement('span');
+        val.className = 'val tnum';
+        val.textContent = metric === 'trx'
+          ? v.toFixed(1)
+          : (v >= 1000 ? Math.round(v / 1000) + 'k' : String(v));
+
+        var bar = document.createElement('div');
+        bar.className = 'bar';
+        bar.style.height = Math.max(4, (v / max) * 78) + '%';
+        bar.style.animationDelay = (i * 40) + 'ms';
+
+        wrap.appendChild(val);
+        wrap.appendChild(bar);
+        chart.appendChild(wrap);
+
+        var lab = document.createElement('span');
+        lab.className = isCurrent ? 'current' : '';
+        lab.textContent = item.m;
+        labels.appendChild(lab);
+      });
+
+      chart.setAttribute('aria-label', metric === 'trx'
+        ? 'Monthly daily average transactions from June to November, rising to 3.0 in November'
+        : 'Monthly daily average value from June to November, rising to Rp 18.250 in November');
+    }
+
+    /* ----- Brand performance ----- */
+    function renderBrands() {
+      var host = document.getElementById('brandList');
+      if (!host) return;
+
+      var rows = BRANDS.map(function (b) {
+        var items = PRODUCTS.filter(function (p) { return p.brand === b; });
+        return { brand: b, count: sumBy(items, 'count'), value: sumBy(items, 'value') };
+      });
+
+      var totalCount = sumBy(rows, 'count') || 1;
+      var totalValue = sumBy(rows, 'value') || 1;
+
+      host.innerHTML = rows.map(function (r) {
+        var cPct = Math.round((r.count / totalCount) * 100);
+        var vPct = Math.round((r.value / totalValue) * 100);
+        var cShare = cPct;
+        var vShare = vPct;
+        var color = BRAND_COLORS[r.brand];
+
+        return '<div class="brand-row">' +
+          '<div class="brand-head">' +
+            '<span class="brand-name">' + r.brand + '</span>' +
+            '<span class="brand-totals tnum">' + r.count + ' tx · ' + formatIDR(r.value) + '</span>' +
+          '</div>' +
+          '<div class="duo-row">' +
+            '<span class="duo-label">Transactions</span>' +
+            '<span class="track"><span class="fill" style="width:' + cPct + '%;background:' + color + '"></span></span>' +
+            '<span class="duo-val tnum">' + cShare + '%</span>' +
+          '</div>' +
+          '<div class="duo-row">' +
+            '<span class="duo-label">Value</span>' +
+            '<span class="track"><span class="fill" style="width:' + vPct + '%;background:' + color + ';opacity:.4"></span></span>' +
+            '<span class="duo-val tnum">' + vShare + '%</span>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    /* ----- Transaction performance by type ----- */
+    function renderTypes(metric) {
+      var host = document.getElementById('typeList');
+      if (!host) return;
+      var useValue = metric === 'value';
+
+      host.innerHTML = TYPE_ORDER.map(function (type) {
+        var items = PRODUCTS.filter(function (p) { return p.type === type; });
+        var count = sumBy(items, 'count');
+        var value = sumBy(items, 'value');
+
+        var breakdown = BRANDS.map(function (b) {
+          var brandItems = items.filter(function (p) { return p.brand === b; });
+          return {
+            brand: b,
+            count: sumBy(brandItems, 'count'),
+            value: sumBy(brandItems, 'value')
+          };
+        }).filter(function (x) { return useValue ? x.value > 0 : x.count > 0; });
+
+        var total = useValue ? value : count;
+
+        var segments = breakdown.map(function (x) {
+          var share = total ? ((useValue ? x.value : x.count) / total) * 100 : 0;
+          return '<span style="width:' + share + '%;background:' + BRAND_COLORS[x.brand] + '"></span>';
+        }).join('');
+
+        var mini = breakdown.map(function (x) {
+          var amount = useValue ? formatIDR(x.value) : x.count + ' tx';
+          return '<span><i style="background:' + BRAND_COLORS[x.brand] + '"></i>' + x.brand + ' ' + amount + '</span>';
+        }).join('');
+
+        return '<div class="tp-row">' +
+          '<div class="tp-head">' +
+            '<span class="tp-name">' + TYPE_LABELS[type] + '</span>' +
+            '<span class="tp-nums tnum"><strong>' + count + ' tx</strong> · ' + formatIDR(value) + '</span>' +
+          '</div>' +
+          '<div class="compose" aria-hidden="true">' + segments + '</div>' +
+          '<div class="brand-mini">' + mini + '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    /* ----- Top products for a selected type + brand ----- */
+    function renderTopProducts() {
+      var typeEl = document.getElementById('tpType');
+      var brandEl = document.getElementById('tpBrand');
+      var list = document.getElementById('topProductsList');
+      var meta = document.getElementById('tpMeta');
+      if (!typeEl || !brandEl || !list || !meta) return;
+
+      var type = typeEl.value;
+      var brand = brandEl.value;
+      var brandLabel = brand === 'all' ? 'All brands' : brand;
+      var rows = PRODUCTS
+        .filter(function (p) { return p.type === type && (brand === 'all' || p.brand === brand); })
+        .sort(function (a, b) { return b.count - a.count; })
+        .slice(0, 5);
+
+      var count = sumBy(rows, 'count');
+      var value = sumBy(rows, 'value');
+      meta.textContent = rows.length
+        ? TYPE_LABELS[type] + ' · ' + brandLabel + ' — ' + count + ' transactions, ' + formatIDR(value)
+        : TYPE_LABELS[type] + ' · ' + brandLabel;
+
+      if (!rows.length) {
+        list.innerHTML = '<p class="empty-state">No transactions for this combination yet.</p>';
+        return;
+      }
+
+      var max = rows[0].count || 1;
+      list.innerHTML = rows.map(function (p, i) {
+        return '<div class="prod-row">' +
+          '<span class="rank tnum">' + (i + 1) + '</span>' +
+          '<div style="min-width:0">' +
+            '<div class="prod-name">' + p.name + '</div>' +
+            '<div class="prod-type">' + TYPE_LABELS[p.type] + ' · ' + p.brand + '</div>' +
+            '<div class="bar-track"><div class="bar-fill" style="width:' + Math.round((p.count / max) * 100) + '%"></div></div>' +
+          '</div>' +
+          '<div class="prod-right">' +
+            '<div class="prod-count tnum">' + p.count + ' tx</div>' +
+            '<div class="prod-value tnum">' + formatIDR(p.value) + '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    function buildDailyTable() {
+      var host = document.getElementById('dailyData');
+      if (!host) return;
+      var rows = DAILY.map(function (d) {
+        return '<tr>' +
+          '<td class="tnum">' + d.d + ' ' + d.m + '</td>' +
+          '<td class="tnum">' + d.s + '</td>' +
+          '<td class="tnum">' + d.f + '</td>' +
+          '<td class="tnum" style="text-align:right">' + (d.v ? formatIDR(d.v) : '—') + '</td>' +
+        '</tr>';
+      }).join('');
+      host.innerHTML = '<table class="data-table compact">' +
+        '<thead><tr><th>Date</th><th>Success</th><th>Failed</th><th>Value</th></tr></thead>' +
+        '<tbody>' + rows + '</tbody>' +
+        '<tfoot><tr><td>Total</td>' +
+          '<td class="tnum">' + sumBy(DAILY, 's') + '</td>' +
+          '<td class="tnum">' + sumBy(DAILY, 'f') + '</td>' +
+          '<td class="tnum" style="text-align:right">' + formatIDR(sumBy(DAILY, 'v')) + '</td>' +
+        '</tr></tfoot>' +
+      '</table>';
+    }
+
+    function buildMonthlyTable() {
+      var host = document.getElementById('monthlyData');
+      if (!host) return;
+      var rows = MONTHS.map(function (m) {
+        return '<tr>' +
+          '<td>' + m.m + '</td>' +
+          '<td class="tnum">' + m.trx.toFixed(1) + '</td>' +
+          '<td class="tnum" style="text-align:right">' + formatIDR(m.value) + '</td>' +
+        '</tr>';
+      }).join('');
+      host.innerHTML = '<table class="data-table compact">' +
+        '<thead><tr><th>Month</th><th>Trx/day</th><th>Value/day</th></tr></thead>' +
+        '<tbody>' + rows + '</tbody>' +
+      '</table>';
+    }
+
+    renderDailyCombo();
+    renderMonths('trx');
+    renderBrands();
+    renderTypes('count');
+    renderTopProducts();
+    buildDailyTable();
+    buildMonthlyTable();
+
+    document.querySelectorAll('#mdaToggle button').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('#mdaToggle button').forEach(function (b) {
+          b.classList.remove('active');
+          b.setAttribute('aria-pressed', 'false');
+        });
+        btn.classList.add('active');
+        btn.setAttribute('aria-pressed', 'true');
+        renderMonths(btn.getAttribute('data-metric'));
+      });
+    });
+
+    document.querySelectorAll('[data-tp-metric]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('[data-tp-metric]').forEach(function (b) {
+          b.classList.remove('active');
+          b.setAttribute('aria-pressed', 'false');
+        });
+        btn.classList.add('active');
+        btn.setAttribute('aria-pressed', 'true');
+        renderTypes(btn.getAttribute('data-tp-metric'));
+      });
+    });
+
+    document.querySelectorAll('.data-toggle').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var target = document.getElementById(btn.getAttribute('aria-controls'));
+        if (!target) return;
+        var open = btn.getAttribute('aria-expanded') === 'true';
+        btn.setAttribute('aria-expanded', String(!open));
+        btn.textContent = open ? 'Show data' : 'Hide data';
+        target.hidden = open;
+      });
+    });
+
+    document.getElementById('tpType').addEventListener('change', renderTopProducts);
+    document.getElementById('tpBrand').addEventListener('change', renderTopProducts);
+
+    var resizeTimer;
+    window.addEventListener('resize', function () {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(renderDailyCombo, 120);
+    });
+  })();
+</script>
+
+</body>
+</html>

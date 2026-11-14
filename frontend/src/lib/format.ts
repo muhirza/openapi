@@ -1,6 +1,6 @@
 /** Format a decimal string as IDR currency (Rp 1.234,56) */
-export function formatIDR(value: string | null | undefined): string {
-  if (!value) return '—';
+export function formatIDR(value: string | number | null | undefined): string {
+  if (value === null || value === undefined || value === '') return '—';
   const num = Number(value);
   if (isNaN(num)) return '—';
   return new Intl.NumberFormat('id-ID', {
@@ -87,4 +87,71 @@ export function activeBadgeClass(active: boolean): string {
   return active
     ? 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800'
     : 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800';
+}
+
+/** Parse a decimal string/number defensively. */
+export function toNumber(value: string | number | null | undefined): number {
+  if (value === null || value === undefined || value === '') return 0;
+  const num = Number(value);
+  return isNaN(num) ? 0 : num;
+}
+
+/** Format a number with Indonesian grouping, e.g. 18250 -> "18.250". */
+export function formatNumber(
+  value: string | number | null | undefined,
+  digits = 0
+): string {
+  if (value === null || value === undefined || value === '') return '—';
+  const num = Number(value);
+  if (isNaN(num)) return '—';
+  return new Intl.NumberFormat('id-ID', {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+  }).format(num);
+}
+
+/** Format a 0-1 rate as a percentage, e.g. 0.9524 -> "95.2%". */
+export function formatRate(
+  value: string | number | null | undefined,
+  digits = 1
+): string {
+  if (value === null || value === undefined || value === '') return '—';
+  const num = Number(value);
+  if (isNaN(num)) return '—';
+  return `${(num * 100).toFixed(digits)}%`;
+}
+
+/** Get the short month from an ISO date without timezone shifts. */
+export function formatMonthShort(dateStr: string | null | undefined): string {
+  if (!dateStr) return '—';
+  const parts = dateStr.split('-');
+  if (parts.length < 2) return '—';
+  const monthIndex = Number(parts[1]) - 1;
+  return EN_MONTHS[monthIndex] ?? '—';
+}
+
+/** Get "8 Nov" from an ISO date without timezone shifts. */
+export function formatDayMonth(dateStr: string | null | undefined): string {
+  if (!dateStr) return '—';
+  const parts = dateStr.split('-');
+  if (parts.length < 3) return dateStr;
+  const monthIndex = Number(parts[1]) - 1;
+  return `${Number(parts[2])} ${EN_MONTHS[monthIndex] ?? ''}`.trim();
+}
+
+/** Compact rupiah for chart axes, e.g. 18250 -> "18k", 1500000 -> "1.5jt". */
+export function formatCompactIDR(
+  value: string | number | null | undefined
+): string {
+  const num = toNumber(value);
+  const absolute = Math.abs(num);
+
+  if (absolute >= 1_000_000) {
+    const millions = num / 1_000_000;
+    return `${Number.isInteger(millions) ? millions.toFixed(0) : millions.toFixed(1)}jt`;
+  }
+  if (absolute >= 1_000) {
+    return `${Math.round(num / 1_000)}k`;
+  }
+  return String(num);
 }

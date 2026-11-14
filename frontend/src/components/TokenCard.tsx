@@ -56,7 +56,11 @@ function deriveTokenState(status: TokenStatus | null): TokenState {
   };
 }
 
-export function TokenCard() {
+interface TokenCardProps {
+  compact?: boolean;
+}
+
+export function TokenCard({ compact = false }: TokenCardProps) {
   const [status, setStatus] = useState<TokenStatus | null>(null);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -100,12 +104,64 @@ export function TokenCard() {
 
   const state = deriveTokenState(status);
 
+  if (compact) {
+    const pending = !status && !loadError;
+    const label = pending ? 'CHECKING' : status ? state.label : 'UNKNOWN';
+    const pillClass =
+      pending || !status ? 'bg-line text-ink-2' : state.pillClass;
+    const dotClass = pending || !status ? 'bg-ink-4' : state.dotClass;
+
+    return (
+      <div className="flex h-full flex-col bg-surface rounded-surface border border-line p-5">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-sm font-medium text-ink-3">API token</p>
+          <span
+            className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-2xs font-semibold ${pillClass}`}
+          >
+            <span className={`h-1.5 w-1.5 rounded-full ${dotClass}`} />
+            {label}
+          </span>
+        </div>
+
+        <p className="mt-3 text-sm font-semibold text-ink">
+          {pending
+            ? 'Checking token…'
+            : !status
+            ? 'Unable to load token status.'
+            : status.has_token && status.is_valid && status.expires_at
+            ? `Expires ${formatDate(status.expires_at)}`
+            : state.message}
+        </p>
+
+        <div className="mt-auto pt-3">
+          {message && (
+            <p className="text-xs text-success-strong">{message}</p>
+          )}
+          {error && <p className="text-xs text-danger-strong">{error}</p>}
+          {loadError && !status && (
+            <p className="text-xs text-warning-strong">Try refreshing below.</p>
+          )}
+          <button
+            type="button"
+            onClick={handleRefresh}
+            disabled={loading}
+            className="mt-1 text-sm font-medium text-primary transition-colors hover:text-primary-hover hover:underline disabled:opacity-50"
+          >
+            {loading ? 'Refreshing…' : 'Refresh token'}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-surface rounded-surface border border-line p-6">
       {/* Header with status pill */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold text-ink">Token Status</h2>
-        <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold ${state.pillClass}`}>
+        <span
+          className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold ${state.pillClass}`}
+        >
           <span className={`w-2 h-2 rounded-full ${state.dotClass}`} />
           {state.label}
         </span>
@@ -115,7 +171,10 @@ export function TokenCard() {
       {loadError && !status && (
         <div className="mb-4 bg-warning-subtle border border-warning-border text-warning-strong px-4 py-3 rounded-control flex items-start">
           <IconAlertCircle size={16} className="mt-0.5 mr-2 shrink-0" />
-          <span className="text-sm">Unable to load token status. It may be offline — try refreshing below.</span>
+          <span className="text-sm">
+            Unable to load token status. It may be offline — try refreshing
+            below.
+          </span>
         </div>
       )}
 
@@ -139,7 +198,11 @@ export function TokenCard() {
 
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium text-ink-3">Token exists:</span>
-          <span className={`text-sm font-medium ${status?.has_token ? 'text-ink' : 'text-ink-4'}`}>
+          <span
+            className={`text-sm font-medium ${
+              status?.has_token ? 'text-ink' : 'text-ink-4'
+            }`}
+          >
             {status?.has_token ? 'Yes' : 'No'}
           </span>
         </div>

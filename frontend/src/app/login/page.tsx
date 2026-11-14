@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { LoginForm } from '../../components/LoginForm';
 import { api } from '../../lib/api';
@@ -8,22 +8,24 @@ import { api } from '../../lib/api';
 export default function LoginPage() {
   const router = useRouter();
   const [showRegister, setShowRegister] = useState(false);
+  const [notice, setNotice] = useState('');
+
+  useEffect(() => {
+    const reason = new URLSearchParams(window.location.search).get('expired');
+    if (reason) {
+      setNotice('Your session ended after a period of inactivity. Please sign in again.');
+    }
+  }, []);
 
   const handleLogin = async (username: string, password: string) => {
     await api.login(username, password);
-    localStorage.setItem('username', username);
-    router.push('/dashboard');
+    router.replace('/dashboard');
   };
 
   const handleRegister = async (username: string, password: string) => {
-    try {
-      await api.register(username, password);
-      await api.login(username, password);
-      localStorage.setItem('username', username);
-      router.push('/dashboard');
-    } catch (err) {
-      throw err;
-    }
+    await api.register(username, password);
+    await api.login(username, password);
+    router.replace('/dashboard');
   };
 
   return (
@@ -71,6 +73,15 @@ export default function LoginPage() {
               ? 'Register to run transactions, track balances, and view history.'
               : 'Access transactions, balances, and history in one secure console.'}
           </p>
+
+          {notice && (
+            <div
+              role="status"
+              className="mt-6 rounded-xl border border-warning-border bg-warning-subtle px-4 py-3 text-sm text-warning-strong"
+            >
+              {notice}
+            </div>
+          )}
 
           <div className="mt-7">
             <LoginForm

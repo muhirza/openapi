@@ -1,37 +1,18 @@
 'use client';
 
-import { useState, useEffect, ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
+import { ReactNode } from 'react';
 import { DashboardLayout } from './DashboardLayout';
-import { api } from '../lib/api';
+import { useSession } from '../hooks/useSession';
 
 interface DashboardShellProps {
   children: ReactNode;
 }
 
-/** Wrapper that guards a dashboard page (requires login) and provides logout. */
+/** Wrapper that guards a dashboard page (requires a server-validated session). */
 export function DashboardShell({ children }: DashboardShellProps) {
-  const router = useRouter();
-  const [username, setUsername] = useState<string | null>(null);
+  const { status, username, logout } = useSession();
 
-  useEffect(() => {
-    const name = localStorage.getItem('username');
-    if (!name) {
-      router.push('/login');
-      return;
-    }
-    setUsername(name);
-  }, [router]);
-
-  const handleLogout = async () => {
-    try {
-      await api.logout();
-    } catch {}
-    localStorage.removeItem('username');
-    router.push('/login');
-  };
-
-  if (!username) {
+  if (status !== 'authenticated' || !username) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center text-ink-3">Loading...</div>
@@ -40,7 +21,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
   }
 
   return (
-    <DashboardLayout username={username} onLogout={handleLogout}>
+    <DashboardLayout username={username} onLogout={logout}>
       {children}
     </DashboardLayout>
   );

@@ -1,19 +1,20 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
+from typing import Optional
 
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, status
 from fastapi.responses import JSONResponse
-
-from app.api.deps import get_current_user
-from app.core.security import hash_password, verify_password, create_access_token, encrypt_value
-from app.models.user import User
-from app.models.api_credential import ApiCredential
-from app.schemas.user import RegisterRequest, LoginRequest, TokenResponse
-from app.schemas.credential import CredentialInput, CredentialStatus
-from app.schemas.token import TokenStatus, TokenRefreshResponse
-from app.services.token_service import TokenService, TokenFetchError
-from app.db.session import get_db
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.api.deps import ACCESS_TOKEN_COOKIE, get_current_user, get_session_context
+from app.core.config import settings
+from app.core.security import hash_password, verify_password
+from app.db.session import get_db
+from app.models.user import User
+from app.schemas.token import TokenStatus, TokenRefreshResponse
+from app.schemas.user import LoginRequest, RegisterRequest, SessionInfo
+from app.services.session_service import SessionService
+from app.services.token_service import TokenService, TokenFetchError
 
 router = APIRouter()
 
@@ -37,6 +38,7 @@ async def register(payload: RegisterRequest, db: AsyncSession = Depends(get_db))
 @router.post("/login")
 async def login(
     payload: LoginRequest,
+    request: Request,
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(select(User).where(User.username == payload.username))
@@ -47,21 +49,61 @@ async def login(
             detail="Invalid credentials",
         )
 
-    token = create_access_token(subject=user.username)
-    response = JSONResponse(content=TokenResponse(access_token=token, token_type="bearer").dict())
+    session_svc = SessionService(db)
+    raw_token = await session_svc.create(
+        user,
+        user_agent=request.headers.get("user-agent"),
+        ip_address=request.client.host if request.client else None,
+    )
+    await session_svc.prune(user.id)
+
+    expires_at = datetime.now(timezone.utc) + timedelta(
+        hours=settings.session_absolute_hours
+    )
+    response = JSONResponse(
+        content={
+            "message": "Logged in",
+            "username": user.username,
+            "expires_at": expires_at.isoformat(),
+        }
+    )
     response.set_cookie(
-        key="access_token",
-        value=token,
+        key=ACCESS_TOKEN_COOKIE,
+        value=raw_token,
         httponly=True,
         samesite="lax",
+        secure=settings.session_cookie_secure,
+        max_age=settings.session_absolute_hours * 3600,
+        path="/",
     )
     return response
 
 @router.post("/logout")
-async def logout():
+async def logout(
+    access_token: Optional[str] = Cookie(None, alias=ACCESS_TOKEN_COOKIE),
+    db: AsyncSession = Depends(get_db),
+):
+    await SessionService(db).revoke(access_token)
+
     response = JSONResponse(content={"message": "Logged out"})
-    response.delete_cookie(key="access_token")
+    response.delete_cookie(
+        key=ACCESS_TOKEN_COOKIE,
+        path="/",
+        httponly=True,
+        samesite="lax",
+        secure=settings.session_cookie_secure,
+    )
     return response
+
+@router.get("/me", response_model=SessionInfo)
+async def me(context=Depends(get_session_context)):
+    user, session = context
+    return SessionInfo(
+        username=user.username,
+        idle_expires_at=session.last_seen_at
+        + timedelta(minutes=settings.session_idle_minutes),
+        session_expires_at=session.expires_at,
+    )
 
 # --- Token Service ---
 

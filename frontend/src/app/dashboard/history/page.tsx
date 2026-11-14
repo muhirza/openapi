@@ -5,6 +5,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { api } from '../../../lib/api';
 import { LocalTransactionListResponse, SyncSettings } from '../../../types';
 import { StatusBadge } from '../../../components/StatusBadge';
+import { IconDownload } from '../../../components/icons';
 import { formatIDR, formatDate, formatDateOnly, formatTime, formatRelative } from '../../../lib/format';
 import Link from 'next/link';
 
@@ -18,6 +19,9 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 const RECHECKABLE_TYPES = ['buy_data_package', 'package_injection'];
+
+// Mirrors the backend MAX_EXPORT_ROWS cap.
+const EXPORT_LIMIT = 20000;
 
 const STATUS_CHIPS = [
   { key: '', label: 'All', tone: 'gray', count: (s: { total: number }) => s.total },
@@ -90,6 +94,10 @@ export default function LocalHistoryPage() {
   const [filterStatus, setFilterStatus] = useState('');
   const [filterSource, setFilterSource] = useState('');
   const [range, setRange] = useState<'all' | 'today' | '7d' | '30d'>('all');
+  const [customStart, setCustomStart] = useState('');
+  const [customEnd, setCustomEnd] = useState('');
+  const [exporting, setExporting] = useState(false);
+  const [exportNotice, setExportNotice] = useState('');
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [recheckingId, setRecheckingId] = useState<number | null>(null);
@@ -108,7 +116,7 @@ export default function LocalHistoryPage() {
     api.getSyncSettings().then(setSyncSettings).catch(() => {});
   }, []);
 
-  const startDate = (() => {
+  const quickStart = (() => {
     const now = new Date();
     if (range === 'today') return now.toISOString().slice(0, 10);
     if (range === '7d') return new Date(now.getTime() - 6 * 86400000).toISOString().slice(0, 10);
@@ -116,7 +124,16 @@ export default function LocalHistoryPage() {
     return undefined;
   })();
 
+  const hasCustomRange = Boolean(customStart || customEnd);
+  const startDate = hasCustomRange ? customStart || undefined : quickStart;
+  const endDate = hasCustomRange ? customEnd || undefined : undefined;
+  const invalidRange = Boolean(customStart && customEnd && customStart > customEnd);
+
   const load = useCallback(async () => {
+    if (invalidRange) {
+      setError('Start date must be on or before the end date.');
+      return;
+    }
     setLoading(true);
     setError('');
     try {
@@ -128,6 +145,7 @@ export default function LocalHistoryPage() {
         source: filterSource || undefined,
         search: debouncedSearch || undefined,
         startDate,
+        endDate,
       });
       setData(res);
     } catch (err) {
@@ -135,7 +153,7 @@ export default function LocalHistoryPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, perPage, filterType, filterStatus, filterSource, debouncedSearch, startDate]);
+  }, [page, perPage, filterType, filterStatus, filterSource, debouncedSearch, startDate, endDate, invalidRange]);
 
   useEffect(() => {
     load();
@@ -143,7 +161,7 @@ export default function LocalHistoryPage() {
 
   useEffect(() => {
     setPage(1);
-  }, [filterType, filterStatus, filterSource, debouncedSearch, range]);
+  }, [filterType, filterStatus, filterSource, debouncedSearch, range, customStart, customEnd]);
 
   const handleRecheck = async (id: number) => {
     setRecheckingId(id);
@@ -198,6 +216,31 @@ export default function LocalHistoryPage() {
     }
   };
 
+  const filteredTotal = data?.total ?? 0;
+  const exportTooLarge = filteredTotal > EXPORT_LIMIT;
+  const canExport = filteredTotal > 0 && !exportTooLarge;
+
+  const handleExport = async () => {
+    setExporting(true);
+    setExportNotice('');
+    setError('');
+    try {
+      await api.downloadHistoryExcel({
+        type: filterType || undefined,
+        status: filterStatus || undefined,
+        source: filterSource || undefined,
+        search: debouncedSearch || undefined,
+        startDate,
+        endDate,
+      });
+      setExportNotice(`Exported ${filteredTotal.toLocaleString()} transaction(s).`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Export failed');
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const handleCopy = async (key: string, value: string) => {
     try {
       await navigator.clipboard.writeText(value);
@@ -206,7 +249,9 @@ export default function LocalHistoryPage() {
     } catch {}
   };
 
-  const hasFilters = Boolean(filterType || filterStatus || filterSource || debouncedSearch || range !== 'all');
+  const hasFilters = Boolean(
+    filterType || filterStatus || filterSource || debouncedSearch || range !== 'all' || hasCustomRange
+  );
   const summary = data?.summary ?? null;
 
   return (
@@ -357,10 +402,14 @@ export default function LocalHistoryPage() {
                 <button
                   key={value}
                   type="button"
-                  onClick={() => setRange(value)}
-                  aria-pressed={range === value}
+                  onClick={() => {
+                    setRange(value);
+                    setCustomStart('');
+                    setCustomEnd('');
+                  }}
+                  aria-pressed={!hasCustomRange && range === value}
                   className={`rounded-control px-2.5 py-1.5 transition-colors ${
-                    range === value
+                    !hasCustomRange && range === value
                       ? 'bg-primary text-white'
                       : 'text-ink-2 hover:bg-line'
                   }`}
@@ -368,6 +417,55 @@ export default function LocalHistoryPage() {
                   {label}
                 </button>
               ))}
+            </div>
+            <div
+              className={`flex items-center gap-1.5 text-sm ${
+                hasCustomRange ? 'rounded-control border border-primary bg-primary-subtle px-2 py-1' : ''
+              }`}
+            >
+              <label htmlFor="history-date-from" className="text-xs text-ink-3">
+                From
+              </label>
+              <input
+                id="history-date-from"
+                type="date"
+                value={customStart}
+                max={customEnd || undefined}
+                onChange={(e) => {
+                  setCustomStart(e.target.value);
+                  setRange('all');
+                  setPage(1);
+                }}
+                className="rounded-control border border-line-strong px-2 py-1.5 text-sm focus:border-primary focus:ring-primary"
+              />
+              <span className="text-ink-4">–</span>
+              <label htmlFor="history-date-to" className="text-xs text-ink-3">
+                To
+              </label>
+              <input
+                id="history-date-to"
+                type="date"
+                value={customEnd}
+                min={customStart || undefined}
+                onChange={(e) => {
+                  setCustomEnd(e.target.value);
+                  setRange('all');
+                  setPage(1);
+                }}
+                className="rounded-control border border-line-strong px-2 py-1.5 text-sm focus:border-primary focus:ring-primary"
+              />
+              {hasCustomRange && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCustomStart('');
+                    setCustomEnd('');
+                  }}
+                  className="text-xs text-ink-3 hover:text-ink-2 underline"
+                >
+                  reset
+                </button>
+              )}
             </div>
             {hasFilters && (
               <button
@@ -377,6 +475,8 @@ export default function LocalHistoryPage() {
                   setFilterSource('');
                   setSearch('');
                   setRange('all');
+                  setCustomStart('');
+                  setCustomEnd('');
                   setPage(1);
                 }}
                 className="text-sm text-ink-3 hover:text-ink-2 underline"
@@ -384,6 +484,34 @@ export default function LocalHistoryPage() {
                 Clear filters
               </button>
             )}
+            <div className="ml-auto flex flex-wrap items-center justify-end gap-3">
+              {exportNotice && <span className="text-xs text-success-strong">{exportNotice}</span>}
+              {invalidRange && (
+                <span className="text-xs text-danger-strong">
+                  Start date must be on or before the end date.
+                </span>
+              )}
+              {!invalidRange && exportTooLarge && (
+                <span className="text-xs text-warning-strong">
+                  Filtered set is {filteredTotal.toLocaleString()} rows — narrow the date range to
+                  export (limit {EXPORT_LIMIT.toLocaleString()}).
+                </span>
+              )}
+              {!invalidRange && !exportTooLarge && filteredTotal === 0 && !loading && (
+                <span className="text-xs text-ink-3">No rows match these filters to export.</span>
+              )}
+              <button
+                type="button"
+                onClick={handleExport}
+                disabled={exporting || !canExport || invalidRange}
+                className="inline-flex items-center gap-1.5 rounded-control bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <IconDownload size={16} />
+                {exporting
+                  ? 'Exporting…'
+                  : `Export Excel${filteredTotal ? ` (${filteredTotal.toLocaleString()})` : ''}`}
+              </button>
+            </div>
           </div>
 
           {/* Quick status filters — counts come from the other active filters */}
@@ -635,6 +763,9 @@ export default function LocalHistoryPage() {
             <div className="mt-4 px-1 py-4 border-t flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <span className="text-sm text-ink-2">
                 Page {data.page} of {data.total_pages} ({data.total} total)
+                <span className="ml-2 text-xs text-ink-4">
+                  Exports include all rows matching the current filters, not just this page.
+                </span>
               </span>
               <div className="flex items-center gap-2">
                 <button

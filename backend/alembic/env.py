@@ -21,6 +21,7 @@ from app.models.local_transaction import LocalTransaction
 from app.models.user_pin import UserPin
 from app.models.user_sync_setting import UserSyncSetting
 from app.models.stock_transaction import StockTransaction
+from app.models.user_session import UserSession
 
 config = context.config
 

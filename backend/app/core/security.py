@@ -1,7 +1,5 @@
 import bcrypt
 from cryptography.fernet import Fernet
-from jose import jwt
-from datetime import datetime, timedelta, timezone
 
 from app.core.config import settings
 
@@ -37,18 +35,3 @@ def encrypt_value(value: str) -> str:
 def decrypt_value(token: str) -> str:
     cipher = _get_cipher()
     return cipher.decrypt(token.encode("utf-8")).decode("utf-8")
-
-
-# --- JWT token ---
-
-def create_access_token(subject: str) -> str:
-    expire = datetime.now(timezone.utc) + timedelta(minutes=settings.access_token_expire_minutes)
-    payload = {"sub": subject, "exp": expire}
-    return jwt.encode(payload, settings.app_secret_key, algorithm=settings.jwt_algorithm)
-
-
-def decode_access_token(token: str) -> dict | None:
-    try:
-        return jwt.decode(token, settings.app_secret_key, algorithms=[settings.jwt_algorithm])
-    except Exception:
-        return None

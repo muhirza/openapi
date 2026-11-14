@@ -62,6 +62,19 @@ alembic/versions/*.pyc
 *.temp
 .tmp/
 
+# Tooling / generated output
+.ua/fingerprints.json
+.ua/knowledge-graph.json
+.ua/meta.json
+.ua/intermediate/
+.ua/tmp/
+.ua/.trash-*/
+graphify-out/
+.commandcode/
+
+# TypeScript incremental build cache
+*.tsbuildinfo
+
 # OS generated files
 ehthumbs.db
 Desktop.ini

@@ -129,9 +129,10 @@ class Settings(BaseSettings):
         "language: ID, Content-Type: application/json"
     )
 
-    # JWT
-    jwt_algorithm: str = "HS256"
-    access_token_expire_minutes: int = 1440
+    # Sessions
+    session_idle_minutes: int = 120
+    session_absolute_hours: int = 12
+    session_cookie_secure: bool = False
 
 
 @lru_cache

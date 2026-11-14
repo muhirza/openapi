@@ -26,34 +26,55 @@ import {
   StockInjectRequest,
   StockHistoryListResponse,
   StockHistoryDetail,
+  StockTransactionInfoResponse,
+  SessionInfo,
+  AnalyticsRange,
+  NonDigitalAnalyticsResponse,
+  TopProductsResponse,
 } from '../types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-interface RequestOptions extends RequestInit {
-  requiresAuth?: boolean;
+const AUTH_PROBE_ENDPOINTS = ['/api/login', '/api/register', '/api/me'];
+
+export class ApiError extends Error {
+  status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+  }
 }
 
 export async function apiRequest<T>(
   endpoint: string,
-  options: RequestOptions = {}
+  options: RequestInit = {}
 ): Promise<T> {
-  const { requiresAuth = false, ...fetchOptions } = options;
-
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...((fetchOptions.headers as Record<string, string>) || {}),
+    ...((options.headers as Record<string, string>) || {}),
   };
 
   const res = await fetch(`${API_URL}${endpoint}`, {
-    ...fetchOptions,
+    ...options,
     headers,
     credentials: 'include',
   });
 
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
-    throw new Error(error.detail || `Request failed: ${res.status}`);
+    const message = error.detail || `Request failed: ${res.status}`;
+
+    if (
+      res.status === 401 &&
+      typeof window !== 'undefined' &&
+      !AUTH_PROBE_ENDPOINTS.some((path) => endpoint.startsWith(path))
+    ) {
+      window.dispatchEvent(new Event('auth:expired'));
+    }
+
+    throw new ApiError(message, res.status);
   }
 
   return res.json();
@@ -68,13 +89,15 @@ export const api = {
     }),
 
   login: (username: string, password: string) =>
-    apiRequest<{ access_token: string; token_type: string }>('/api/login', {
+    apiRequest<{ message: string; username: string; expires_at: string }>('/api/login', {
       method: 'POST',
       body: JSON.stringify({ username, password }),
     }),
 
   logout: () =>
     apiRequest<{ message: string }>('/api/logout', { method: 'POST' }),
+
+  me: () => apiRequest<SessionInfo>('/api/me'),
 
   // ---------- Credentials ----------
   // Single credential status for a specific api_name (default: get_token)
@@ -164,6 +187,56 @@ export const api = {
   getLocalTransaction: (id: number | string) =>
     apiRequest<LocalTransactionDetail>(`/api/transactions/local/${id}`),
 
+  downloadHistoryExcel: async (opts: {
+    type?: string;
+    status?: string;
+    source?: string;
+    search?: string;
+    startDate?: string;
+    endDate?: string;
+  } = {}) => {
+    const params = new URLSearchParams();
+    if (opts.type) params.set('type', opts.type);
+    if (opts.status) params.set('status', opts.status);
+    if (opts.source) params.set('source', opts.source);
+    if (opts.search) params.set('search', opts.search);
+    if (opts.startDate) params.set('start_date', opts.startDate);
+    if (opts.endDate) params.set('end_date', opts.endDate);
+    const qs = params.toString();
+
+    const res = await fetch(
+      `${API_URL}/api/transactions/local/export${qs ? `?${qs}` : ''}`,
+      { credentials: 'include' }
+    );
+
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.detail || `Export failed: ${res.status}`);
+    }
+
+    const disposition = res.headers.get('Content-Disposition') || '';
+    const match = /filename="?([^";]+)"?/i.exec(disposition);
+    const fallback =
+      opts.startDate && opts.endDate
+        ? `TransactionHistory_${opts.startDate}_to_${opts.endDate}.xlsx`
+        : opts.startDate
+        ? `TransactionHistory_from_${opts.startDate}.xlsx`
+        : opts.endDate
+        ? `TransactionHistory_until_${opts.endDate}.xlsx`
+        : `TransactionHistory_${new Date().toISOString().slice(0, 10)}.xlsx`;
+    const filename = match ? match[1] : fallback;
+
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  },
+
   refreshTransaction: (id: number | string) =>
     apiRequest<TransactionResult>(`/api/transactions/local/${id}/refresh`, {
       method: 'POST',
@@ -190,6 +263,29 @@ export const api = {
 
   getBalance: (type: 'eload' | 'dompul' | 'pulsa') =>
     apiRequest<BalanceResponse>(`/api/balance/${type}`),
+
+  // ---------- Analytics ----------
+  getDashboardAnalytics: (range: AnalyticsRange) => {
+    const params = new URLSearchParams({ range });
+    return apiRequest<NonDigitalAnalyticsResponse>(
+      `/api/analytics/non-digital?${params.toString()}`
+    );
+  },
+
+  getTopProducts: (opts: {
+    range: AnalyticsRange;
+    transactionType?: string;
+    brand?: string;
+    limit?: number;
+  }) => {
+    const params = new URLSearchParams({ range: opts.range });
+    if (opts.transactionType) params.set('transaction_type', opts.transactionType);
+    if (opts.brand) params.set('brand', opts.brand);
+    if (opts.limit != null) params.set('limit', String(opts.limit));
+    return apiRequest<TopProductsResponse>(
+      `/api/analytics/non-digital/top-products?${params.toString()}`
+    );
+  },
 
   // ---------- History ----------
   getApiHistory: (days?: number, startDate?: string, endDate?: string) => {
@@ -281,5 +377,15 @@ export const api = {
   refreshStockHistoryDetail: (family: StockFamily, id: number | string) =>
     apiRequest<StockHistoryDetail>(`/api/stock/${family}/history/${id}/refresh-detail`, {
       method: 'POST',
+    }),
+
+  lookupStockTransactionInfo: (
+    family: StockFamily,
+    servicetype: string,
+    masterTrxId: string
+  ) =>
+    apiRequest<StockTransactionInfoResponse>(`/api/stock/${family}/transaction-info`, {
+      method: 'POST',
+      body: JSON.stringify({ servicetype, master_trx_id: masterTrxId }),
     }),
 };

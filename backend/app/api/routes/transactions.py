@@ -1,5 +1,5 @@
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, desc, or_
 from datetime import datetime, timezone
@@ -28,6 +28,11 @@ from app.services.transaction.stock_inject import StockInjectService
 from app.services.pin_service import PinService, PinNotFoundError
 from app.services.token_service import TokenFetchError
 from app.services.provider_client import ProviderAPIError
+from app.services.history_export_service import (
+    MAX_EXPORT_ROWS,
+    export_filename,
+    export_transactions_xlsx,
+)
 
 router = APIRouter()
 
@@ -188,21 +193,24 @@ async def stock_inject(
 
 # ---------- Local Transaction History ----------
 
-@router.get("/transactions/local", response_model=LocalTransactionListResponse)
-async def get_local_transactions(
-    page: int = Query(1, ge=1),
-    per_page: int = Query(25, ge=1, le=100),
-    type: Optional[str] = Query(None),
-    status: Optional[str] = Query(None),
-    source: Optional[str] = Query(None, pattern=r"^(app|synced)$"),
-    search: Optional[str] = Query(None, description="Search refs, destination, product"),
-    start_date: Optional[str] = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
-    end_date: Optional[str] = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    """Paginated local transaction history with filters and a filtered summary."""
-    conditions = [LocalTransaction.user_id == current_user.id]
+XLSX_MEDIA_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+
+
+def _local_history_conditions(
+    user_id: int,
+    type: Optional[str],
+    status: Optional[str],
+    source: Optional[str],
+    search: Optional[str],
+    start_date: Optional[str],
+    end_date: Optional[str],
+) -> tuple[list, list]:
+    """Filters shared by the history list and its Excel export.
+
+    Returns (conditions, facet_conditions). The facet copy excludes the status
+    filter, so quick-filter counts stay accurate while one is applied.
+    """
+    conditions = [LocalTransaction.user_id == user_id]
     if type:
         conditions.append(LocalTransaction.transaction_type == type)
     if source:
@@ -225,11 +233,29 @@ async def get_local_transactions(
         end = datetime.strptime(end_date, "%Y-%m-%d").replace(hour=23, minute=59, second=59, tzinfo=timezone.utc)
         conditions.append(LocalTransaction.created_at <= end)
 
-    # The status filter narrows the list only. Summary counts are a "facet" of the
-    # other filters, so quick-filter counts stay accurate while one is applied.
     facet_conditions = list(conditions)
     if status:
         conditions.append(LocalTransaction.status == status)
+    return conditions, facet_conditions
+
+
+@router.get("/transactions/local", response_model=LocalTransactionListResponse)
+async def get_local_transactions(
+    page: int = Query(1, ge=1),
+    per_page: int = Query(25, ge=1, le=100),
+    type: Optional[str] = Query(None),
+    status: Optional[str] = Query(None),
+    source: Optional[str] = Query(None, pattern=r"^(app|synced)$"),
+    search: Optional[str] = Query(None, description="Search refs, destination, product"),
+    start_date: Optional[str] = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
+    end_date: Optional[str] = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Paginated local transaction history with filters and a filtered summary."""
+    conditions, facet_conditions = _local_history_conditions(
+        current_user.id, type, status, source, search, start_date, end_date
+    )
 
     total = (await db.execute(
         select(func.count()).select_from(select(LocalTransaction).where(*conditions).subquery())
@@ -273,6 +299,57 @@ async def get_local_transactions(
         per_page=per_page,
         total_pages=total_pages,
         summary=summary,
+    )
+
+
+@router.get("/transactions/local/export")
+async def export_local_transactions(
+    type: Optional[str] = Query(None),
+    status: Optional[str] = Query(None),
+    source: Optional[str] = Query(None, pattern=r"^(app|synced)$"),
+    search: Optional[str] = Query(None, description="Search refs, destination, product"),
+    start_date: Optional[str] = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
+    end_date: Optional[str] = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Export the currently filtered history as .xlsx.
+
+    Only the filtered view is exportable (there is no dump-all path), and the
+    result set is capped at MAX_EXPORT_ROWS to bound memory and download size.
+    """
+    conditions, _facet = _local_history_conditions(
+        current_user.id, type, status, source, search, start_date, end_date
+    )
+
+    total = (await db.execute(
+        select(func.count()).select_from(select(LocalTransaction).where(*conditions).subquery())
+    )).scalar_one()
+
+    if total == 0:
+        raise HTTPException(status_code=404, detail="No transactions match these filters.")
+    if total > MAX_EXPORT_ROWS:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Export limited to {MAX_EXPORT_ROWS:,} rows; these filters match "
+                f"{total:,}. Narrow the date range or add filters."
+            ),
+        )
+
+    buffer = await export_transactions_xlsx(
+        db, user_id=current_user.id, conditions=conditions, total=total
+    )
+
+    return Response(
+        content=buffer.getvalue(),
+        media_type=XLSX_MEDIA_TYPE,
+        headers={
+            "Content-Disposition": (
+                f'attachment; filename="{export_filename(start_date, end_date)}"'
+            ),
+            "X-Export-Row-Count": str(total),
+        },
     )
 
 

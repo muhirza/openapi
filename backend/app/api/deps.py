@@ -1,44 +1,36 @@
 from typing import Optional
 from fastapi import Depends, HTTPException, status, Cookie
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 
 from app.db.session import get_db
-from app.core.security import decode_access_token
 from app.models.user import User
+from app.models.user_session import UserSession
+from app.services.session_service import SessionService
+
+ACCESS_TOKEN_COOKIE = "access_token"
 
 
-async def get_current_user(
+async def get_session_context(
     db: AsyncSession = Depends(get_db),
-    access_token: Optional[str] = Cookie(None),
-) -> User:
+    access_token: Optional[str] = Cookie(None, alias=ACCESS_TOKEN_COOKIE),
+) -> tuple[User, UserSession]:
     if not access_token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Not authenticated",
         )
 
-    payload = decode_access_token(access_token)
-    if not payload:
+    context = await SessionService(db).resolve(access_token)
+    if not context:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token",
+            detail="Session expired",
         )
 
-    username = payload.get("sub")
-    if not username:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token payload",
-        )
+    return context
 
-    result = await db.execute(select(User).where(User.username == username))
-    user = result.scalar_one_or_none()
 
-    if not user or not user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found or inactive",
-        )
-
-    return user
+async def get_current_user(
+    context: tuple[User, UserSession] = Depends(get_session_context),
+) -> User:
+    return context[0]
