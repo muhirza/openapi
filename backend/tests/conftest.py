@@ -86,6 +86,7 @@ def tx_factory():
         created_at: datetime = NOW,
         product_code: str | None = None,
         product_name: str | None = None,
+        brand: str | None = None,
     ) -> LocalTransaction:
         return LocalTransaction(
             id=tx_id,
@@ -96,6 +97,7 @@ def tx_factory():
             amount=amount,
             product_code=product_code,
             product_name=product_name,
+            brand=brand,
             created_at=created_at,
             source="app",
         )

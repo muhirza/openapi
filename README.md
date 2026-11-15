@@ -1,6 +1,6 @@
-# MVP0 Transaction Dashboard
+# MVP0 OPEN API SIDIVA Dashboard
 
-Local web-based transaction dashboard — MVP0.
+Local web-based dashboard — MVP0.
 
 ## Quick Start
 

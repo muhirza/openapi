@@ -17,8 +17,8 @@ const firaCode = Fira_Code({
 });
 
 export const metadata: Metadata = {
-  title: 'Transaction Dashboard',
-  description: 'MVP0 - Local transaction dashboard',
+  title: 'OPEN API SIDIVA Dashboard',
+  description: 'Dashboard lokal',
 };
 
 export default function RootLayout({

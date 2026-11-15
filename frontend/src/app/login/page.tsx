@@ -13,7 +13,7 @@ export default function LoginPage() {
   useEffect(() => {
     const reason = new URLSearchParams(window.location.search).get('expired');
     if (reason) {
-      setNotice('Your session ended after a period of inactivity. Please sign in again.');
+      setNotice('Sesi Anda berakhir karena tidak ada aktivitas. Silakan masuk kembali.');
     }
   }, []);
 
@@ -48,7 +48,7 @@ export default function LoginPage() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
           </svg>
         </span>
-        <span className="text-lg font-bold tracking-tight text-ink">Transaction Dashboard</span>
+        <span className="text-lg font-bold tracking-tight text-ink">OPEN API SIDIVA Dashboard</span>
       </header>
 
       {/* Card */}
@@ -66,12 +66,12 @@ export default function LoginPage() {
           </div>
 
           <h1 className="mt-5 text-center text-2xl font-bold text-ink">
-            {showRegister ? 'Create your account' : 'Sign in with username'}
+            {showRegister ? 'Buat akun Anda' : 'Masuk dengan nama pengguna'}
           </h1>
           <p className="mx-auto mt-2 max-w-[30ch] text-center text-sm leading-relaxed text-ink-3">
             {showRegister
-              ? 'Register to run transactions, track balances, and view history.'
-              : 'Access transactions, balances, and history in one secure console.'}
+              ? 'Daftar untuk melakukan transaksi, memantau saldo, dan melihat riwayat.'
+              : 'Akses transaksi, saldo, dan riwayat dalam satu konsol yang aman.'}
           </p>
 
           {notice && (
@@ -92,7 +92,7 @@ export default function LoginPage() {
 
           <div className="mt-7 flex items-center gap-3">
             <div aria-hidden="true" className="h-px flex-1 border-t border-dashed border-line-strong" />
-            <span className="text-xs text-ink-4">Or</span>
+            <span className="text-xs text-ink-4">Atau</span>
             <div aria-hidden="true" className="h-px flex-1 border-t border-dashed border-line-strong" />
           </div>
 
@@ -101,7 +101,7 @@ export default function LoginPage() {
             onClick={() => setShowRegister(!showRegister)}
             className="mt-4 w-full cursor-pointer rounded-xl border border-line bg-surface/70 px-4 py-3 text-sm font-medium text-ink-2 transition-colors duration-200 hover:bg-surface hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
           >
-            {showRegister ? 'Back to Login' : 'New user? Register'}
+            {showRegister ? 'Kembali ke Halaman Masuk' : 'Pengguna baru? Daftar'}
           </button>
         </div>
       </main>

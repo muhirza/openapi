@@ -42,7 +42,7 @@ export default function LocalHistoryDetailPage() {
       const res = await api.getLocalTransaction(id);
       setTx(res);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load transaction');
+      setError(err instanceof Error ? err.message : 'Gagal memuat transaksi');
     } finally {
       setLoading(false);
     }
@@ -56,7 +56,7 @@ export default function LocalHistoryDetailPage() {
       const res = await api.refreshTransaction(id);
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to refresh');
+      setError(err instanceof Error ? err.message : 'Gagal memuat ulang');
     } finally {
       setRefreshing(false);
     }
@@ -69,7 +69,7 @@ export default function LocalHistoryDetailPage() {
   if (loading && !tx) {
     return (
       <DashboardShell>
-        <div className="text-center py-8 text-ink-4">Loading...</div>
+        <div className="text-center py-8 text-ink-4">Memuat...</div>
       </DashboardShell>
     );
   }
@@ -77,7 +77,7 @@ export default function LocalHistoryDetailPage() {
   if (!tx) {
     return (
       <DashboardShell>
-        <div className="text-center py-8 text-danger">{error || 'Transaction not found'}</div>
+        <div className="text-center py-8 text-danger">{error || 'Transaksi tidak ditemukan'}</div>
       </DashboardShell>
     );
   }
@@ -105,7 +105,7 @@ export default function LocalHistoryDetailPage() {
       <div>
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-ink">Transaction Detail</h1>
+            <h1 className="text-2xl font-bold text-ink">Detail Transaksi</h1>
             <p className="mt-1 text-sm text-ink-3">
               Ref: {tx.transaction_ref}
             </p>
@@ -118,7 +118,7 @@ export default function LocalHistoryDetailPage() {
                 disabled={refreshing}
                 className="px-3 py-1.5 text-sm border border-line-strong rounded-control hover:bg-canvas disabled:opacity-50"
               >
-                {refreshing ? 'Refreshing...' : 'Refresh Status'}
+                {refreshing ? 'Memuat ulang...' : 'Muat Ulang Status'}
               </button>
             )}
             <button
@@ -127,7 +127,7 @@ export default function LocalHistoryDetailPage() {
               aria-pressed={showUnmasked}
               className="px-3 py-1.5 text-sm border border-line-strong rounded-control hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
             >
-              {showUnmasked ? 'Hide unmasked data' : 'Show unmasked data'}
+              {showUnmasked ? 'Sembunyikan data tanpa masking' : 'Tampilkan data tanpa masking'}
             </button>
           </div>
         </div>
@@ -142,15 +142,15 @@ export default function LocalHistoryDetailPage() {
           <div className="mb-4 bg-warning-subtle border border-warning-border text-warning-strong px-4 py-3 rounded-control text-sm">
             {hasUnmasked ? (
               <>
-                Unmasked view — shows the data actually sent to and received from the
-                provider. The request body contains the provider-encrypted PIN; the plaintext
-                PIN is never stored.
+                Tampilan tanpa masking — menampilkan data yang benar-benar dikirim ke dan
+                diterima dari penyedia. Body request berisi PIN yang dienkripsi penyedia;
+                PIN asli tidak pernah disimpan.
               </>
             ) : (
               <>
-                This record was created before unmasked data capture was added, so only the
-                masked copy is available. New transactions will include the unmasked request,
-                endpoint, and response.
+                Catatan ini dibuat sebelum pencatatan data tanpa masking ditambahkan, sehingga
+                hanya salinan tersamar yang tersedia. Transaksi baru akan menyertakan request,
+                endpoint, dan respons tanpa masking.
               </>
             )}
           </div>
@@ -159,35 +159,35 @@ export default function LocalHistoryDetailPage() {
         <div className="bg-surface rounded-surface shadow border p-6 space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
             <div>
-              <label className="block text-xs text-ink-3">Reference</label>
+              <label className="block text-xs text-ink-3">Referensi</label>
               <p className="font-mono text-sm text-ink">{tx.transaction_ref}</p>
             </div>
             <div>
-              <label className="block text-xs text-ink-3">Provider Reference</label>
+              <label className="block text-xs text-ink-3">Referensi Penyedia</label>
               <p className="font-mono text-sm text-ink">{tx.provider_reference || '—'}</p>
             </div>
             <div>
-              <label className="block text-xs text-ink-3">Type</label>
+              <label className="block text-xs text-ink-3">Tipe</label>
               <p className="text-sm text-ink">{tx.transaction_type}</p>
             </div>
             <div>
-              <label className="block text-xs text-ink-3">Product</label>
+              <label className="block text-xs text-ink-3">Produk</label>
               <p className="text-sm text-ink">{tx.product_name || tx.product_code || '—'}</p>
             </div>
             <div>
-              <label className="block text-xs text-ink-3">Product Code</label>
+              <label className="block text-xs text-ink-3">Kode Produk</label>
               <p className="font-mono text-sm text-ink">{tx.product_code || '—'}</p>
             </div>
             <div>
-              <label className="block text-xs text-ink-3">Product Type</label>
+              <label className="block text-xs text-ink-3">Tipe Produk</label>
               <p className="text-sm text-ink">{tx.product_type || '—'}</p>
             </div>
             <div>
-              <label className="block text-xs text-ink-3">Destination</label>
+              <label className="block text-xs text-ink-3">Tujuan</label>
               <p className="text-sm text-ink">{tx.destination || '—'}</p>
             </div>
             <div>
-              <label className="block text-xs text-ink-3">Amount</label>
+              <label className="block text-xs text-ink-3">Nominal</label>
               <p className="text-sm text-ink">{tx.amount ? formatIDR(tx.amount) : '—'}</p>
             </div>
             <div>
@@ -195,27 +195,27 @@ export default function LocalHistoryDetailPage() {
               <p className="text-sm text-ink">{tx.status}</p>
             </div>
             <div>
-              <label className="block text-xs text-ink-3">Created</label>
+              <label className="block text-xs text-ink-3">Dibuat</label>
               <p className="text-sm text-ink">{formatDate(tx.created_at)}</p>
             </div>
             <div>
-              <label className="block text-xs text-ink-3">Request Timestamp</label>
+              <label className="block text-xs text-ink-3">Waktu Request</label>
               <p className="text-sm text-ink">{formatDate(tx.request_timestamp)}</p>
             </div>
             <div>
-              <label className="block text-xs text-ink-3">Response Timestamp</label>
+              <label className="block text-xs text-ink-3">Waktu Respons</label>
               <p className="text-sm text-ink">{formatDate(tx.provider_response_timestamp)}</p>
             </div>
             <div>
-              <label className="block text-xs text-ink-3">HTTP Status</label>
+              <label className="block text-xs text-ink-3">Status HTTP</label>
               <p className="text-sm text-ink">{tx.http_status_code ?? '—'}</p>
             </div>
             <div>
-              <label className="block text-xs text-ink-3">Error Code</label>
+              <label className="block text-xs text-ink-3">Kode Error</label>
               <p className="text-sm text-ink">{tx.error_code || '—'}</p>
             </div>
             <div>
-              <label className="block text-xs text-ink-3">Error Message</label>
+              <label className="block text-xs text-ink-3">Pesan Error</label>
               <p className="text-sm text-ink">{tx.error_message || '—'}</p>
             </div>
           </div>
@@ -225,15 +225,15 @@ export default function LocalHistoryDetailPage() {
               <h3 className="text-sm font-medium text-ink">
                 Metadata{" "}
                 {showUnmasked && tx.metadata_unmasked != null ? (
-                  <span className="text-warning-strong">(unmasked)</span>
+                  <span className="text-warning-strong">(tanpa masking)</span>
                 ) : (
-                  <span className="text-ink-4">(masked)</span>
+                  <span className="text-ink-4">(tersamar)</span>
                 )}
               </h3>
             </div>
             {showUnmasked && tx.metadata_unmasked == null && (
               <p className="mb-2 text-xs text-ink-4">
-                Stored unmasked data is not available for this record (created before this feature).
+                Data tanpa masking tidak tersedia untuk catatan ini (dibuat sebelum fitur ini ada).
               </p>
             )}
             <pre className="text-xs bg-canvas p-3 rounded-control overflow-auto max-h-64">
@@ -243,19 +243,19 @@ export default function LocalHistoryDetailPage() {
 
           <div className="border-t pt-4">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium text-ink">cURL Request</h3>
+              <h3 className="text-sm font-medium text-ink">Request cURL</h3>
               <button
                 type="button"
                 onClick={handleCopy}
                 className="px-2.5 py-1 text-xs border border-line-strong rounded-control hover:bg-canvas"
               >
-                {copied ? 'Copied' : 'Copy'}
+                {copied ? 'Tersalin' : 'Salin'}
               </button>
             </div>
-            <p aria-live="polite" className="sr-only">{copied ? 'cURL copied to clipboard' : ''}</p>
+            <p aria-live="polite" className="sr-only">{copied ? 'cURL disalin ke clipboard' : ''}</p>
             {curlMasked && (
               <p className="mb-2 text-xs text-ink-4">
-                Stored unmasked data is not available for this record (created before this feature) — body shown masked.
+                Data tanpa masking tidak tersedia untuk catatan ini (dibuat sebelum fitur ini ada) — body ditampilkan tersamar.
               </p>
             )}
             <pre className="text-xs bg-ink text-line p-3 rounded-control overflow-auto max-h-64">
@@ -265,16 +265,16 @@ export default function LocalHistoryDetailPage() {
 
           <div className="border-t pt-4">
             <h3 className="text-sm font-medium text-ink mb-2">
-              Raw Provider Response{" "}
+              Respons Mentah Penyedia{" "}
               {showUnmasked && tx.raw_response_unmasked != null ? (
-                <span className="text-warning-strong">(unmasked)</span>
+                <span className="text-warning-strong">(tanpa masking)</span>
               ) : (
-                <span className="text-ink-4">(masked)</span>
+                <span className="text-ink-4">(tersamar)</span>
               )}
             </h3>
             {showUnmasked && tx.raw_response_unmasked == null && (
               <p className="mb-2 text-xs text-ink-4">
-                Stored unmasked data is not available for this record (created before this feature).
+                Data tanpa masking tidak tersedia untuk catatan ini (dibuat sebelum fitur ini ada).
               </p>
             )}
             <pre className="text-xs bg-canvas p-3 rounded-control overflow-auto max-h-64">

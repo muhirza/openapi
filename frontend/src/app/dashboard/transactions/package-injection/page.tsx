@@ -20,7 +20,7 @@ export default function PackageInjectionPage() {
     setError('');
     setLoading(true);
     if (!productCode) {
-      setError('Please select a product');
+      setError('Pilih produk terlebih dahulu');
       setLoading(false);
       return;
     }
@@ -33,7 +33,7 @@ export default function PackageInjectionPage() {
       setMsisdn('');
       setProductCode('');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Transaction failed');
+      setError(err instanceof Error ? err.message : 'Transaksi gagal');
     } finally {
       setLoading(false);
     }
@@ -43,10 +43,10 @@ export default function PackageInjectionPage() {
     <DashboardShell>
       <div>
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-ink">Package Injection</h1>
+          <h1 className="text-2xl font-bold text-ink">Injeksi Paket</h1>
           <p className="mt-1 text-sm text-ink-3">
-            Inject a package to the destination number. Status will be verified
-            automatically after submission.
+            Injeksikan paket ke nomor tujuan. Status akan diverifikasi
+            otomatis setelah dikirim.
           </p>
         </div>
 
@@ -54,7 +54,7 @@ export default function PackageInjectionPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="msisdn" className="block text-sm font-medium text-ink-2">
-                MSISDN (Phone Number)
+                MSISDN (Nomor HP)
               </label>
               <input
                 id="msisdn"
@@ -69,7 +69,7 @@ export default function PackageInjectionPage() {
 
             <div>
               <label htmlFor="product" className="block text-sm font-medium text-ink-2">
-                Product (search name, code, or brand)
+                Produk (cari nama, kode, atau brand)
               </label>
               <div className="mt-1">
                 <ProductSelect value={productCode} onChange={setProductCode} productType="SP Cocktail Plan" />
@@ -81,7 +81,7 @@ export default function PackageInjectionPage() {
               disabled={loading}
               className="w-full bg-primary text-white py-2 px-4 rounded-control hover:bg-primary-hover disabled:opacity-50 font-medium"
             >
-              {loading ? 'Processing...' : 'Inject Package'}
+              {loading ? 'Memproses...' : 'Injeksi Paket'}
             </button>
           </form>
 
@@ -90,11 +90,11 @@ export default function PackageInjectionPage() {
           {result && result.status === 'PROCESSING' && (
             <div className="mt-4 text-xs text-ink-3">
               <p>
-                Transaction is being processed. Final status will appear in{' '}
+                Transaksi sedang diproses. Status akhir akan muncul di{' '}
                 <a href="/dashboard/history" className="text-primary underline">
-                  History
+                  Riwayat
                 </a>{' '}
-                — use the Refresh button there to re-check.
+                — gunakan tombol Muat ulang di sana untuk memeriksa kembali.
               </p>
             </div>
           )}

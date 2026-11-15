@@ -40,7 +40,7 @@ router = APIRouter()
 async def _require_pin(user_id: int, db: AsyncSession) -> None:
     svc = PinService(db)
     if not await svc.has_pin(user_id):
-        raise HTTPException(status_code=400, detail="Transaction PIN not configured")
+        raise HTTPException(status_code=400, detail="PIN transaksi belum dikonfigurasi")
 
 
 @router.post("/transactions/buy-pulsa", response_model=TransactionResult)
@@ -327,13 +327,13 @@ async def export_local_transactions(
     )).scalar_one()
 
     if total == 0:
-        raise HTTPException(status_code=404, detail="No transactions match these filters.")
+        raise HTTPException(status_code=404, detail="Tidak ada transaksi yang cocok dengan filter ini.")
     if total > MAX_EXPORT_ROWS:
         raise HTTPException(
             status_code=400,
             detail=(
-                f"Export limited to {MAX_EXPORT_ROWS:,} rows; these filters match "
-                f"{total:,}. Narrow the date range or add filters."
+                f"Ekspor dibatasi {MAX_EXPORT_ROWS:,} baris; filter ini cocok dengan "
+                f"{total:,}. Persempit rentang tanggal atau tambahkan filter."
             ),
         )
 
@@ -367,7 +367,7 @@ async def get_local_transaction_detail(
     result = await db.execute(stmt)
     record = result.scalar_one_or_none()
     if not record:
-        raise HTTPException(status_code=404, detail="Transaction not found")
+        raise HTTPException(status_code=404, detail="Transaksi tidak ditemukan")
     return LocalTransactionDetailOut.model_validate(record)
 
 
@@ -385,7 +385,7 @@ async def refresh_transaction_status(
     result = await db.execute(stmt)
     record = result.scalar_one_or_none()
     if not record:
-        raise HTTPException(status_code=404, detail="Transaction not found")
+        raise HTTPException(status_code=404, detail="Transaksi tidak ditemukan")
 
     if record.transaction_type == "buy_data_package":
         svc = BuyDataPackageService(db)
@@ -394,10 +394,10 @@ async def refresh_transaction_status(
         svc = PackageInjectionService(db)
         updated = await svc.refresh_status(current_user.id, tx_id)
     else:
-        raise HTTPException(status_code=400, detail="Transaction type does not support refresh")
+        raise HTTPException(status_code=400, detail="Tipe transaksi ini tidak mendukung pemuatan ulang")
 
     if not updated:
-        raise HTTPException(status_code=404, detail="Transaction not found after refresh")
+        raise HTTPException(status_code=404, detail="Transaksi tidak ditemukan setelah dimuat ulang")
 
     return TransactionResult(
         transaction_ref=updated.transaction_ref,

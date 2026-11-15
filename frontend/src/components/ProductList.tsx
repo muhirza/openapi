@@ -69,7 +69,7 @@ export function ProductList() {
       });
       setData(res);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load products');
+      setError(err instanceof Error ? err.message : 'Gagal memuat produk');
     } finally {
       setLoading(false);
     }
@@ -89,7 +89,7 @@ export function ProductList() {
       setSyncResult(res);
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to sync products');
+      setError(err instanceof Error ? err.message : 'Gagal menyinkronkan produk');
     } finally {
       setSyncing(false);
     }
@@ -113,20 +113,20 @@ export function ProductList() {
       );
       const sheet = XLSX.utils.json_to_sheet(
         rows.map((p) => ({
-          Code: p.product_code,
-          Name: p.product_name ?? '',
-          Type: p.product_type ?? '',
+          Kode: p.product_code,
+          Nama: p.product_name ?? '',
+          Tipe: p.product_type ?? '',
           Brand: p.owner ?? '',
-          Price: p.price ? Number(p.price) : '',
-          Status: p.active ? 'Active' : 'Inactive',
-          'Last Synced': p.last_synced_at ?? '',
+          Harga: p.price ? Number(p.price) : '',
+          Status: p.active ? 'Aktif' : 'Nonaktif',
+          'Terakhir Disinkronkan': p.last_synced_at ?? '',
         }))
       );
       const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, sheet, 'Products');
+      XLSX.utils.book_append_sheet(wb, sheet, 'Produk');
       XLSX.writeFile(wb, `products-${mode}-${new Date().toISOString().slice(0, 10)}.xlsx`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to export products');
+      setError(err instanceof Error ? err.message : 'Gagal mengekspor produk');
     } finally {
       setExporting(null);
     }
@@ -157,11 +157,11 @@ export function ProductList() {
       <div className="p-6 border-b border-line">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h2 className="text-lg font-semibold text-ink">Products</h2>
+            <h2 className="text-lg font-semibold text-ink">Produk</h2>
             <p className="mt-1 text-sm text-ink-3">
               {data
-                ? `Showing ${startIndex}–${endIndex} of ${data.total} products • ${data.active_count} active • ${data.inactive_count} inactive`
-                : 'Loading...'}
+                ? `Menampilkan ${startIndex}–${endIndex} dari ${data.total} produk • ${data.active_count} aktif • ${data.inactive_count} nonaktif`
+                : 'Memuat...'}
             </p>
           </div>
 
@@ -172,14 +172,14 @@ export function ProductList() {
               disabled={exporting !== null}
               className="inline-flex items-center px-4 py-2 border border-line-strong rounded-control shadow-sm text-sm font-medium text-ink-2 bg-surface hover:bg-canvas disabled:opacity-50"
             >
-              {exporting === 'all' ? 'Exporting...' : 'Export All'}
+              {exporting === 'all' ? 'Mengekspor...' : 'Ekspor Semua'}
             </button>
             <button
               onClick={() => handleExport('filtered')}
               disabled={exporting !== null}
               className="inline-flex items-center px-4 py-2 border border-line-strong rounded-control shadow-sm text-sm font-medium text-ink-2 bg-surface hover:bg-canvas disabled:opacity-50"
             >
-              {exporting === 'filtered' ? 'Exporting...' : 'Export Filtered'}
+              {exporting === 'filtered' ? 'Mengekspor...' : 'Ekspor Terfilter'}
             </button>
 
             {/* Sync */}
@@ -188,7 +188,7 @@ export function ProductList() {
               disabled={syncing}
               className="inline-flex items-center px-4 py-2 border border-transparent rounded-control shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-hover disabled:opacity-50"
             >
-              {syncing ? 'Syncing...' : '↻ Sync'}
+              {syncing ? 'Menyinkronkan...' : '↻ Sinkronkan'}
             </button>
           </div>
         </div>
@@ -201,7 +201,7 @@ export function ProductList() {
             onChange={(e) => { setBrand(e.target.value); setPage(1); }}
             className="w-48 rounded-control border border-line-strong pl-3 pr-3 py-2 text-sm focus:border-primary focus:ring-primary"
           >
-            <option value="">All Brands</option>
+            <option value="">Semua Brand</option>
             {data?.brands?.map((b) => (
               <option key={b} value={b}>{b}</option>
             ))}
@@ -212,7 +212,7 @@ export function ProductList() {
             type="text"
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            placeholder="Search code or name..."
+            placeholder="Cari kode atau nama..."
             className="w-64 rounded-control border border-line-strong pl-3 pr-3 py-2 text-sm focus:border-primary focus:ring-primary"
           />
 
@@ -222,7 +222,7 @@ export function ProductList() {
             onChange={(e) => { setProductType(e.target.value); setPage(1); }}
             className="w-48 rounded-control border border-line-strong pl-3 pr-3 py-2 text-sm focus:border-primary focus:ring-primary"
           >
-            <option value="">All Types</option>
+            <option value="">Semua Tipe</option>
             {data?.product_types?.map((t) => (
               <option key={t} value={t}>{t}</option>
             ))}
@@ -234,9 +234,9 @@ export function ProductList() {
             onChange={(e) => { setFilter(e.target.value as ActiveFilter); setPage(1); }}
             className="w-32 rounded-control border border-line-strong py-2 px-3 text-sm focus:border-primary focus:ring-primary"
           >
-            <option value="all">All</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
+            <option value="all">Semua</option>
+            <option value="active">Aktif</option>
+            <option value="inactive">Nonaktif</option>
           </select>
 
           {/* Clear filters */}
@@ -247,7 +247,7 @@ export function ProductList() {
               }}
               className="text-sm text-ink-3 hover:text-ink-2 underline"
             >
-              Clear filters
+              Hapus filter
             </button>
           ) : null}
         </div>
@@ -263,14 +263,14 @@ export function ProductList() {
           >
             {syncResult.success ? (
               <>
-                Sync complete — {syncResult.inserted} added,{' '}
-                {syncResult.updated} updated, {syncResult.deactivated}{' '}
-                deactivated.
+                Sinkronisasi selesai — {syncResult.inserted} ditambahkan,{' '}
+                {syncResult.updated} diperbarui, {syncResult.deactivated}{' '}
+                dinonaktifkan.
                 {syncResult.synced_at &&
                   ` (${formatRelative(syncResult.synced_at)})`}
               </>
             ) : (
-              syncResult.error || 'Sync failed'
+              syncResult.error || 'Sinkronisasi gagal'
             )}
           </div>
         )}
@@ -291,19 +291,19 @@ export function ProductList() {
                 className="px-6 py-3 text-left text-xs font-medium text-ink-3 uppercase tracking-wider cursor-pointer hover:bg-line"
                 onClick={() => toggleSort('product_name')}
               >
-                Name{getSortIcon('product_name')}
+                Nama{getSortIcon('product_name')}
               </th>
               <th
                 className="px-6 py-3 text-left text-xs font-medium text-ink-3 uppercase tracking-wider cursor-pointer hover:bg-line"
                 onClick={() => toggleSort('product_code')}
               >
-                Code{getSortIcon('product_code')}
+                Kode{getSortIcon('product_code')}
               </th>
               <th
                 className="px-6 py-3 text-left text-xs font-medium text-ink-3 uppercase tracking-wider cursor-pointer hover:bg-line"
                 onClick={() => toggleSort('product_type')}
               >
-                Type{getSortIcon('product_type')}
+                Tipe{getSortIcon('product_type')}
               </th>
               <th
                 className="px-6 py-3 text-left text-xs font-medium text-ink-3 uppercase tracking-wider cursor-pointer hover:bg-line"
@@ -315,7 +315,7 @@ export function ProductList() {
                 className="px-6 py-3 text-left text-xs font-medium text-ink-3 uppercase tracking-wider cursor-pointer hover:bg-line"
                 onClick={() => toggleSort('price')}
               >
-                Price{getSortIcon('price')}
+                Harga{getSortIcon('price')}
               </th>
               <th
                 className="px-6 py-3 text-left text-xs font-medium text-ink-3 uppercase tracking-wider cursor-pointer hover:bg-line"
@@ -327,7 +327,7 @@ export function ProductList() {
                 className="px-6 py-3 text-left text-xs font-medium text-ink-3 uppercase tracking-wider cursor-pointer hover:bg-line"
                 onClick={() => toggleSort('last_synced_at')}
               >
-                Last Synced{getSortIcon('last_synced_at')}
+                Terakhir Disinkronkan{getSortIcon('last_synced_at')}
               </th>
             </tr>
           </thead>
@@ -335,13 +335,13 @@ export function ProductList() {
             {loading && !data ? (
               <tr>
                 <td colSpan={7} className="px-6 py-8 text-center text-ink-4">
-                  Loading...
+                  Memuat...
                 </td>
               </tr>
             ) : !data || data.products.length === 0 ? (
               <tr>
                 <td colSpan={7} className="px-6 py-8 text-center text-ink-4">
-                  No products found. Try syncing first.
+                  Produk tidak ditemukan. Coba sinkronkan terlebih dahulu.
                 </td>
               </tr>
             ) : (
@@ -364,7 +364,7 @@ export function ProductList() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={activeBadgeClass(p.active)}>
-                      {p.active ? 'Active' : 'Inactive'}
+                      {p.active ? 'Aktif' : 'Nonaktif'}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-ink-3">
@@ -382,17 +382,17 @@ export function ProductList() {
         <div className="px-6 py-4 border-t flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-2">
             <span className="text-sm text-ink-2">
-              Page {currentPage} of {totalPages}
+              Halaman {currentPage} dari {totalPages}
             </span>
             <select
               value={perPage}
               onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }}
               className="ml-2 rounded-control border border-line-strong py-1 px-2 text-sm focus:border-primary focus:ring-primary"
             >
-              <option value="10">10 per page</option>
-              <option value="25">25 per page</option>
-              <option value="50">50 per page</option>
-              <option value="100">100 per page</option>
+              <option value="10">10 per halaman</option>
+              <option value="25">25 per halaman</option>
+              <option value="50">50 per halaman</option>
+              <option value="100">100 per halaman</option>
             </select>
           </div>
           <div className="flex items-center gap-2">
@@ -401,14 +401,14 @@ export function ProductList() {
               disabled={currentPage <= 1}
               className="px-3 py-1.5 text-sm border border-line-strong rounded-control disabled:opacity-50 disabled:cursor-not-allowed hover:bg-canvas"
             >
-              Prev
+              Sebelumnya
             </button>
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage >= totalPages}
               className="px-3 py-1.5 text-sm border border-line-strong rounded-control disabled:opacity-50 disabled:cursor-not-allowed hover:bg-canvas"
             >
-              Next
+              Berikutnya
             </button>
           </div>
         </div>

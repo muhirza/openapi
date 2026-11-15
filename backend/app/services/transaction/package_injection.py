@@ -67,6 +67,7 @@ class PackageInjectionService(TransactionServiceBase):
         if isinstance(tx_result.data, dict):
             provider_ref = tx_result.data.get("transactionId")
 
+        brand = await self._resolve_product_brand(user_id, product_code)
         record = self._build_tx_record(
             user_id=user_id,
             transaction_type="package_injection",
@@ -74,6 +75,7 @@ class PackageInjectionService(TransactionServiceBase):
             request_payload=request_payload,
             extra={
                 "product_code": product_code,
+                "brand": brand,
                 "destination": msisdn,
                 "metadata": {"product_code": product_code},
             },

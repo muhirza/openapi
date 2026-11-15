@@ -34,13 +34,13 @@ export function DashboardOverview() {
 
       <section>
         <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-          <h2 className="text-base font-semibold text-ink">Non-digital stock</h2>
+          <h2 className="text-base font-semibold text-ink">Stok non-digital</h2>
           <span className="inline-flex items-center rounded-full border border-line bg-surface px-2 py-0.5 text-2xs font-semibold text-ink-3">
             MVP1
           </span>
           <p className="text-sm text-ink-3">
-            Buy pulsa, data packages, and injections — everything except digital
-            stock.
+            Beli pulsa, paket data, dan injeksi — semuanya kecuali stok
+            digital.
           </p>
         </div>
 

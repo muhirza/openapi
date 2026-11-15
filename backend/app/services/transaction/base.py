@@ -75,14 +75,14 @@ class TransactionServiceBase:
         """Return (token, api_id, api_key) for the given api_name."""
         token_obj = await self.token_svc.get_valid_token(user_id)
         if not token_obj:
-            raise TokenFetchError("No valid provider token. Configure Get Token first.")
+            raise TokenFetchError("Tidak ada token penyedia yang valid. Konfigurasikan Get Token terlebih dahulu.")
         token = token_obj.access_token_encrypted
         from app.core.security import decrypt_value
         token = decrypt_value(token)
 
         creds = await self.token_svc.get_credentials_by_name(user_id, api_name)
         if not creds:
-            raise TokenFetchError(f"No credentials configured for {api_name}.")
+            raise TokenFetchError(f"Belum ada kredensial yang dikonfigurasi untuk {api_name}.")
         api_id, api_key = await self.token_svc.decrypt_credentials(creds)
         return token, api_id, api_key
 
@@ -96,7 +96,7 @@ class TransactionServiceBase:
         req_body = {"data": plain_pin}
         result = await provider_client.post_json(endpoint, header_template, token, api_id, api_key, req_body)
         if not result.ok:
-            raise TokenFetchError(f"Encrypt PIN failed: {result.error_code} - {result.error_message}")
+            raise TokenFetchError(f"Enkripsi PIN gagal: {result.error_code} - {result.error_message}")
         return result.data, result
 
     async def _verify_via_history_detail(
@@ -238,6 +238,25 @@ class TransactionServiceBase:
             return
         await self._apply_verification(user_id, local_tx_id, status, detail_row, raw)
 
+    async def _resolve_product_brand(
+        self, user_id: int, product_code: str | None
+    ) -> str | None:
+        """Snapshot the catalog owner (brand) for a product-based transaction."""
+        if not product_code:
+            return None
+
+        owner = (
+            await self.db.execute(
+                select(Product.owner).where(
+                    Product.user_id == user_id,
+                    Product.product_code == product_code,
+                )
+            )
+        ).scalar_one_or_none()
+
+        normalized = (owner or "").strip()
+        return normalized or None
+
     def _build_tx_record(
         self,
         user_id: int,
@@ -292,6 +311,7 @@ class TransactionServiceBase:
             product_code=extra.get("product_code"),
             product_name=extra.get("product_name"),
             product_type=extra.get("product_type"),
+            brand=extra.get("brand"),
             amount=extra.get("amount"),
             status=status,
             provider_reference=provider_reference,

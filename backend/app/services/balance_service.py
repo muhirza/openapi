@@ -24,7 +24,7 @@ class BalanceService:
     async def fetch_balance(self, user_id: int, balance_type: str) -> BalanceResponse:
         """Fetch a single balance (eload | dompul)."""
         if balance_type not in BALANCE_API_CONFIG:
-            raise ValueError(f"Invalid balance type: {balance_type}")
+            raise ValueError(f"Tipe saldo tidak valid: {balance_type}")
 
         endpoint_key, header_key = BALANCE_API_CONFIG[balance_type]
         endpoint = getattr(settings, f"provider_{endpoint_key}_endpoint")
@@ -36,14 +36,14 @@ class BalanceService:
         # 1. Get valid token
         token_obj = await token_svc.get_valid_token(user_id)
         if not token_obj:
-            raise TokenFetchError("No valid provider token. Configure Get Token credentials first.")
+            raise TokenFetchError("Tidak ada token penyedia yang valid. Konfigurasikan kredensial Get Token terlebih dahulu.")
         from app.core.security import decrypt_value
         token = decrypt_value(token_obj.access_token_encrypted)
 
         # 2. Get API credentials
         creds = await token_svc.get_credentials_by_name(user_id, cred_api_name)
         if not creds:
-            raise TokenFetchError(f"No credentials configured for {cred_api_name}.")
+            raise TokenFetchError(f"Belum ada kredensial yang dikonfigurasi untuk {cred_api_name}.")
         api_id, api_key = await token_svc.decrypt_credentials(creds)
 
         # 3. Call provider
@@ -100,4 +100,4 @@ class BalanceService:
                 return Decimal(data)
             except InvalidOperation:
                 pass
-        raise ValueError(f"Cannot parse balance from data: {data}")
+        raise ValueError(f"Tidak dapat membaca saldo dari data: {data}")

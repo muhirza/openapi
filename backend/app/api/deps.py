@@ -17,14 +17,14 @@ async def get_session_context(
     if not access_token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated",
+            detail="Belum terautentikasi",
         )
 
     context = await SessionService(db).resolve(access_token)
     if not context:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Session expired",
+            detail="Sesi berakhir",
         )
 
     return context

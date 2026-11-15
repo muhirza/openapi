@@ -91,12 +91,12 @@ class ProviderClient:
                 )
             except httpx.HTTPError as e:
                 raise ProviderAPIError(
-                    f"Network error calling provider: {type(e).__name__}: {e}"
+                    f"Error jaringan saat memanggil penyedia: {type(e).__name__}: {e}"
                 ) from e
 
         if resp.status_code != 200:
             raise ProviderAPIError(
-                f"Provider returned HTTP {resp.status_code}",
+                f"Penyedia mengembalikan HTTP {resp.status_code}",
                 status_code=resp.status_code,
                 raw=resp.json() if resp.headers.get("content-type", "").startswith("application/json") else None,
             )
@@ -104,7 +104,7 @@ class ProviderClient:
         try:
             data = resp.json()
         except Exception as e:
-            raise ProviderAPIError(f"Invalid JSON from provider: {e}") from e
+            raise ProviderAPIError(f"JSON tidak valid dari penyedia: {e}") from e
 
         # Parse standard envelope
         result = data.get("result", {})
@@ -113,7 +113,7 @@ class ProviderClient:
 
         if error_code != "00":
             raise ProviderAPIError(
-                f"Provider error {error_code}: {error_message}",
+                f"Error penyedia {error_code}: {error_message}",
                 status_code=resp.status_code,
                 raw=data,
             )
@@ -156,7 +156,7 @@ class ProviderClient:
                 raw=None,
                 http_status=http_status,
                 error_code="INVALID_RESPONSE",
-                error_message="Non-JSON or non-object response",
+                error_message="Respons bukan JSON atau bukan objek",
             )
         result = data.get("result", {}) if isinstance(data.get("result"), dict) else {}
         error_code = result.get("errorCode")
@@ -197,7 +197,7 @@ class ProviderClient:
                 ok=False,
                 http_status=resp.status_code,
                 error_code="INVALID_JSON",
-                error_message="Invalid JSON from provider",
+                error_message="JSON tidak valid dari penyedia",
             )
         return self._parse_envelope(resp.status_code, data)
 
@@ -228,7 +228,7 @@ class ProviderClient:
                 ok=False,
                 http_status=resp.status_code,
                 error_code="INVALID_JSON",
-                error_message="Invalid JSON from provider",
+                error_message="JSON tidak valid dari penyedia",
             )
         return self._parse_envelope(resp.status_code, data)
 

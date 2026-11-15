@@ -18,7 +18,7 @@ export default function BuyDataPackagePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!productCode) {
-      setError('Please select a product');
+      setError('Pilih produk terlebih dahulu');
       return;
     }
     setResult(null);
@@ -33,7 +33,7 @@ export default function BuyDataPackagePage() {
       setMsisdn('');
       setProductCode('');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Transaction failed');
+      setError(err instanceof Error ? err.message : 'Transaksi gagal');
     } finally {
       setLoading(false);
     }
@@ -43,10 +43,10 @@ export default function BuyDataPackagePage() {
     <DashboardShell>
       <div>
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-ink">Buy Data Package</h1>
+          <h1 className="text-2xl font-bold text-ink">Beli Paket Data</h1>
           <p className="mt-1 text-sm text-ink-3">
-            Select a data package from the product catalog. Status will be verified
-            automatically after submission.
+            Pilih paket data dari katalog produk. Status akan diverifikasi
+            otomatis setelah dikirim.
           </p>
         </div>
 
@@ -54,7 +54,7 @@ export default function BuyDataPackagePage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="msisdn" className="block text-sm font-medium text-ink-2">
-                MSISDN (Phone Number)
+                MSISDN (Nomor HP)
               </label>
               <input
                 id="msisdn"
@@ -69,7 +69,7 @@ export default function BuyDataPackagePage() {
 
             <div>
               <label htmlFor="product" className="block text-sm font-medium text-ink-2">
-                Product (search name, code, or brand)
+                Produk (cari nama, kode, atau brand)
               </label>
               <div className="mt-1">
                 <ProductSelect
@@ -85,7 +85,7 @@ export default function BuyDataPackagePage() {
               disabled={loading}
               className="w-full bg-primary text-white py-2 px-4 rounded-control hover:bg-primary-hover disabled:opacity-50 font-medium"
             >
-              {loading ? 'Processing...' : 'Buy Data Package'}
+              {loading ? 'Memproses...' : 'Beli Paket Data'}
             </button>
           </form>
 
@@ -94,11 +94,11 @@ export default function BuyDataPackagePage() {
           {result && result.status === 'PROCESSING' && (
             <div className="mt-4 text-xs text-ink-3">
               <p>
-                Transaction is being processed. Final status will appear in{' '}
+                Transaksi sedang diproses. Status akhir akan muncul di{' '}
                 <a href="/dashboard/history" className="text-primary underline">
-                  History
+                  Riwayat
                 </a>{' '}
-                — use the Refresh button there to re-check.
+                — gunakan tombol Muat ulang di sana untuk memeriksa kembali.
               </p>
             </div>
           )}

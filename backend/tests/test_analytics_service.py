@@ -861,3 +861,87 @@ async def test_top_products_breaks_ties_by_amount_then_name(
         "Gamma",
         "Alpha",
     ]
+
+
+@pytest.mark.asyncio
+async def test_brand_snapshot_precedes_catalog_owner(
+    db_session, users, tx_factory, product_factory, now
+):
+    user, _ = users
+    db_session.add_all(
+        [
+            product_factory(1, user.id, "P1", owner="SMARTFREN"),
+            tx_factory(1, user.id, product_code="P1", brand="XL", created_at=now),
+        ]
+    )
+    await db_session.flush()
+
+    result = await AnalyticsService(db_session).get_non_digital(
+        user.id, "30d", now=now
+    )
+
+    assert [(item.brand, item.transaction_count) for item in result.brands] == [
+        ("XL", 1)
+    ]
+
+
+@pytest.mark.asyncio
+async def test_buy_pulsa_denomination_acts_as_product(
+    db_session, users, tx_factory, now
+):
+    user, _ = users
+    db_session.add_all(
+        [
+            tx_factory(
+                1,
+                user.id,
+                brand="XL",
+                product_code="PULSA_5000",
+                product_name="Pulsa 5.000",
+                amount=Decimal("5000.00"),
+                created_at=now,
+            ),
+            tx_factory(
+                2,
+                user.id,
+                brand="SMARTFREN",
+                product_code="PULSA_5000",
+                product_name="Pulsa 5.000",
+                amount=Decimal("5000.00"),
+                created_at=now,
+            ),
+            tx_factory(
+                3,
+                user.id,
+                brand="SMARTFREN",
+                product_code="PULSA_2001",
+                product_name="Pulsa 2.001",
+                amount=Decimal("2001.00"),
+                created_at=now,
+            ),
+        ]
+    )
+    await db_session.flush()
+
+    service = AnalyticsService(db_session)
+    result = await service.get_non_digital(user.id, "30d", now=now)
+
+    assert {item.brand for item in result.brands} == {"XL", "SMARTFREN"}
+
+    top = await service.get_top_products(
+        user.id,
+        "30d",
+        transaction_type="buy_pulsa",
+        brand="all",
+        limit=5,
+        now=now,
+    )
+
+    assert {
+        (item.display_name, item.brand, item.transaction_count)
+        for item in top.items
+    } == {
+        ("Pulsa 5.000", "XL", 1),
+        ("Pulsa 5.000", "SMARTFREN", 1),
+        ("Pulsa 2.001", "SMARTFREN", 1),
+    }

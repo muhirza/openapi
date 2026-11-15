@@ -49,11 +49,11 @@ function MdaTooltip({ active, payload }: MdaTooltipProps) {
     <div className="rounded-control border border-line bg-surface px-3 py-2 text-xs">
       <p className="font-semibold text-ink">{formatMonthShort(point.month)}</p>
       <p className="mt-1 text-ink-2">
-        {formatNumber(point.transactions_per_day, 1)} trx/day ·{' '}
-        {formatIDR(point.amount_per_day)}/day
+        {formatNumber(point.transactions_per_day, 1)} trx/hari ·{' '}
+        {formatIDR(point.amount_per_day)}/hari
       </p>
       <p className="text-ink-2">
-        {point.transaction_count} transactions ·{' '}
+        {point.transaction_count} transaksi ·{' '}
         {formatIDR(point.transaction_amount)}
       </p>
     </div>
@@ -88,10 +88,10 @@ export function MdaByMonthChart({ mda, loading }: MdaByMonthChartProps) {
   if (!mda) {
     return (
       <DashboardCard className="p-5">
-        <h2 className="text-sm font-semibold text-ink">MDA by month</h2>
-        <p className="mt-1 text-xs text-ink-3">Average per day</p>
+        <h2 className="text-sm font-semibold text-ink">MDA per bulan</h2>
+        <p className="mt-1 text-xs text-ink-3">Rata-rata per hari</p>
         <div className="mt-4 flex h-[180px] items-center justify-center rounded-control border border-dashed border-line text-sm text-ink-4">
-          No chart data available.
+          Data grafik tidak tersedia.
         </div>
       </DashboardCard>
     );
@@ -132,14 +132,14 @@ export function MdaByMonthChart({ mda, loading }: MdaByMonthChartProps) {
     <DashboardCard className="p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="text-sm font-semibold text-ink">MDA by month</h2>
-          <p className="mt-1 text-xs text-ink-3">Average per day</p>
+          <h2 className="text-sm font-semibold text-ink">MDA per bulan</h2>
+          <p className="mt-1 text-xs text-ink-3">Rata-rata per hari</p>
         </div>
 
         <div
           className="inline-flex gap-0.5 rounded-control border border-line p-0.5"
           role="group"
-          aria-label="MDA metric"
+          aria-label="Metrik MDA"
         >
           {(['trx', 'amount'] as const).map((option) => (
             <button
@@ -153,7 +153,7 @@ export function MdaByMonthChart({ mda, loading }: MdaByMonthChartProps) {
                   : 'text-ink-3 hover:bg-surface-muted hover:text-ink-2'
               }`}
             >
-              {option === 'trx' ? 'Count/day' : 'Amount/day'}
+              {option === 'trx' ? 'Jumlah/hari' : 'Nominal/hari'}
             </button>
           ))}
         </div>
@@ -163,9 +163,9 @@ export function MdaByMonthChart({ mda, loading }: MdaByMonthChartProps) {
         <div
           className="mt-4"
           role="img"
-          aria-label={`Monthly daily average from ${formatMonthShort(
+          aria-label={`Rata-rata harian bulanan dari ${formatMonthShort(
             mda.months[0]?.month
-          )} to ${currentLabel}`}
+          )} hingga ${currentLabel}`}
         >
           {mounted ? (
             <ResponsiveContainer width="100%" height={180}>
@@ -194,7 +194,7 @@ export function MdaByMonthChart({ mda, loading }: MdaByMonthChartProps) {
                   axisLine={false}
                   tickLine={false}
                   label={{
-                    value: metric === 'trx' ? 'trx/day' : 'Rp/day',
+                    value: metric === 'trx' ? 'trx/hari' : 'Rp/hari',
                     position: 'insideTopLeft',
                     fill: '#94A3B8',
                     fontSize: 10,
@@ -206,7 +206,7 @@ export function MdaByMonthChart({ mda, loading }: MdaByMonthChartProps) {
                 />
                 <Bar
                   dataKey={dataKey}
-                  name={metric === 'trx' ? 'Count/day' : 'Amount/day'}
+                  name={metric === 'trx' ? 'Jumlah/hari' : 'Nominal/hari'}
                   radius={2}
                   maxBarSize={34}
                   isAnimationActive={!reducedMotion}
@@ -229,17 +229,17 @@ export function MdaByMonthChart({ mda, loading }: MdaByMonthChartProps) {
         </div>
       ) : (
         <div className="mt-4 flex h-[180px] items-center justify-center rounded-control border border-dashed border-line text-sm text-ink-4">
-          No monthly activity yet.
+          Belum ada aktivitas bulanan.
         </div>
       )}
 
       <p className="mt-2 flex items-center gap-1.5 text-xs text-ink-4">
         <span className="h-2 w-2 rounded-sm bg-primary" aria-hidden="true" />
-        {currentLabel} covers {mda.current.elapsed_days} elapsed days.
+        {currentLabel} mencakup {mda.current.elapsed_days} hari berjalan.
       </p>
 
       <ChartDataTable
-        columns={['Month', 'Transactions', 'Trx/day', 'Amount', 'Amount/day']}
+        columns={['Bulan', 'Transaksi', 'Trx/hari', 'Nominal', 'Nominal/hari']}
         rows={mda.months.map((point) => [
           `${formatMonthShort(point.month)} ${point.month.slice(0, 4)}`,
           point.transaction_count,

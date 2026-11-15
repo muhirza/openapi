@@ -30,7 +30,7 @@ from app.models.user_session import UserSession  # noqa: F401 — registered for
 
 logger = logging.getLogger("uvicorn.error")
 
-app = FastAPI(title="Transaction Dashboard API", version="0.1.0")
+app = FastAPI(title="OPEN API SIDIVA Dashboard API", version="0.1.0")
 
 app.add_middleware(
     CORSMiddleware,

@@ -43,28 +43,28 @@ export function TransactionResultBox({
       </div>
       <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 text-xs">
         <div className="min-w-0 break-words">
-          <span className="text-ink-3">Reference:</span>{' '}
+          <span className="text-ink-3">Referensi:</span>{' '}
           <span className="font-mono break-all">{result.transaction_ref}</span>
         </div>
         {result.provider_reference && (
           <div className="min-w-0 break-words">
-            <span className="text-ink-3">Provider Ref:</span>{' '}
+            <span className="text-ink-3">Ref Penyedia:</span>{' '}
             <span className="font-mono break-all">{result.provider_reference}</span>
           </div>
         )}
         {result.destination && (
           <div className="min-w-0 break-words">
-            <span className="text-ink-3">Destination:</span> {result.destination}
+            <span className="text-ink-3">Tujuan:</span> {result.destination}
           </div>
         )}
         {result.amount && (
           <div className="min-w-0 break-words">
-            <span className="text-ink-3">Amount:</span> {formatIDR(result.amount)}
+            <span className="text-ink-3">Nominal:</span> {formatIDR(result.amount)}
           </div>
         )}
         {result.created_at && (
           <div className="min-w-0 break-words">
-            <span className="text-ink-3">Time:</span> {formatDate(result.created_at)}
+            <span className="text-ink-3">Waktu:</span> {formatDate(result.created_at)}
           </div>
         )}
       </div>
@@ -73,7 +73,7 @@ export function TransactionResultBox({
           href={historyHref}
           className="text-xs underline text-primary hover:text-primary-hover"
         >
-          View in History →
+          Lihat di Riwayat →
         </a>
       </div>
     </div>

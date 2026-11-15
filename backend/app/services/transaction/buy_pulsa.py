@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.models.local_transaction import LocalTransaction
+from app.services.brand_service import resolve_brand
 from app.services.provider_client import provider_client
 from app.services.transaction.base import TransactionServiceBase
 
@@ -38,12 +39,18 @@ class BuyPulsaService(TransactionServiceBase):
 
         # 5. Build record
         request_payload = {"msisdn": msisdn, "pin": "[ENCRYPTED]", "denom": denom}
+        denom_int = int(denom)
+        denom_label = f"{denom_int:,}".replace(",", ".")
         record = self._build_tx_record(
             user_id=user_id,
             transaction_type="buy_pulsa",
             provider_result=tx_result,
             request_payload=request_payload,
             extra={
+                "product_code": f"PULSA_{denom_int}",
+                "product_name": f"Pulsa {denom_label}",
+                "product_type": "pulsa",
+                "brand": resolve_brand(msisdn),
                 "destination": msisdn,
                 "amount": float(denom),
                 "metadata": {"denom": denom},

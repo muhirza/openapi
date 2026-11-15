@@ -44,7 +44,7 @@ class StockHistoryService:
         token_svc = TokenService(self.db)
         token_obj = await token_svc.get_valid_token(user_id)
         if not token_obj:
-            raise TokenFetchError("No valid provider token.")
+            raise TokenFetchError("Tidak ada token penyedia yang valid.")
         token = decrypt_value(token_obj.access_token_encrypted)
 
         creds = await token_svc.get_credentials_by_name(user_id, api_name)
@@ -52,7 +52,7 @@ class StockHistoryService:
             creds = await token_svc.get_credentials_by_name(user_id, fallback_api_name)
         if not creds:
             raise TokenFetchError(
-                f"No credentials configured for {api_name}. Add them in API Config."
+                f"Belum ada kredensial untuk {api_name}. Tambahkan di Konfigurasi API."
             )
         api_id, api_key = await token_svc.decrypt_credentials(creds)
         return token, api_id, api_key
@@ -68,7 +68,7 @@ class StockHistoryService:
         command = self.DETAIL_COMMANDS.get(family, {}).get(servicetype)
         if not command:
             raise ValueError(
-                f"Detail lookup is not supported for {family} service type {servicetype}"
+                f"Pencarian detail tidak didukung untuk layanan {family} tipe {servicetype}"
             )
 
         token, api_id, api_key = await self._auth(
@@ -95,7 +95,7 @@ class StockHistoryService:
         if not result.ok:
             parts = [result.error_code, result.error_message]
             detail = " ".join(str(p) for p in parts if p and p != "Unknown error")
-            raise ProviderAPIError(detail or "Provider detail lookup failed")
+            raise ProviderAPIError(detail or "Pencarian detail ke penyedia gagal")
 
         detail_rows = self.parse_detail_rows(result.data, record.master_trx_id)
         aggregate = self.aggregate_detail_status(detail_rows)

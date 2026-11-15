@@ -49,7 +49,7 @@ export function TopProducts({ range, brands }: TopProductsProps) {
           setError(
             err instanceof Error
               ? err.message
-              : 'Failed to load top products'
+              : 'Gagal memuat produk teratas'
           );
         }
       })
@@ -65,16 +65,16 @@ export function TopProducts({ range, brands }: TopProductsProps) {
   const maxCount =
     items.reduce((max, item) => Math.max(max, item.transaction_count), 0) || 1;
   const typeLabel = TRANSACTION_TYPE_LABELS[transactionType] ?? transactionType;
-  const brandLabel = brand === 'all' ? 'All brands' : brand;
+  const brandLabel = brand === 'all' ? 'Semua brand' : brand;
 
   return (
     <DashboardCard className="p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="text-sm font-semibold text-ink">Top products</h2>
+          <h2 className="text-sm font-semibold text-ink">Produk teratas</h2>
           <p className="mt-1 text-xs text-ink-3">
             {typeLabel} · {brandLabel}
-            {loading && items.length > 0 ? ' · Updating…' : ''}
+            {loading && items.length > 0 ? ' · Memperbarui…' : ''}
           </p>
         </div>
 
@@ -83,7 +83,7 @@ export function TopProducts({ range, brands }: TopProductsProps) {
             htmlFor="top-products-type"
             className="text-xs text-ink-3"
           >
-            Type
+            Tipe
           </label>
           <select
             id="top-products-type"
@@ -110,7 +110,7 @@ export function TopProducts({ range, brands }: TopProductsProps) {
             onChange={(event) => setBrand(event.target.value)}
             className={SELECT_CLASS}
           >
-            <option value="all">All brands</option>
+            <option value="all">Semua brand</option>
             {brands.map((name) => (
               <option key={name} value={name}>
                 {name}
@@ -128,7 +128,7 @@ export function TopProducts({ range, brands }: TopProductsProps) {
             onClick={() => setVersion((current) => current + 1)}
             className="font-semibold underline"
           >
-            Retry
+            Coba lagi
           </button>
         </div>
       )}
@@ -144,7 +144,7 @@ export function TopProducts({ range, brands }: TopProductsProps) {
         </div>
       ) : items.length === 0 ? (
         <div className="mt-4 rounded-control border border-dashed border-line px-4 py-8 text-center text-sm text-ink-4">
-          No transactions for this combination yet.
+          Belum ada transaksi untuk kombinasi ini.
         </div>
       ) : (
         <div className="mt-3" aria-busy={loading}>

@@ -57,17 +57,17 @@ export function BrandPerformance({ brands, loading }: BrandPerformanceProps) {
   return (
     <DashboardCard className="p-5">
       <div>
-        <h2 className="text-sm font-semibold text-ink">Brand performance</h2>
+        <h2 className="text-sm font-semibold text-ink">Performa brand</h2>
         <p className="mt-1 text-xs text-ink-3">
-          Share of total transactions vs share of total value
+          Porsi total transaksi vs porsi total nilai
         </p>
       </div>
 
       {empty ? (
         <div className="mt-4 rounded-control border border-dashed border-line px-4 py-8 text-center text-sm text-ink-4">
           {brands
-            ? 'No brand activity in this range yet.'
-            : 'No brand data available.'}
+            ? 'Belum ada aktivitas brand pada rentang ini.'
+            : 'Data brand tidak tersedia.'}
         </div>
       ) : (
         <div className="mt-3">
@@ -94,12 +94,12 @@ export function BrandPerformance({ brands, loading }: BrandPerformanceProps) {
                 </div>
 
                 <ShareBar
-                  label="Transactions"
+                  label="Transaksi"
                   percent={countPercent}
                   color={color}
                 />
                 <ShareBar
-                  label="Value"
+                  label="Nilai"
                   percent={amountPercent}
                   color={color}
                   opacity={0.4}

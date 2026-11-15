@@ -71,15 +71,18 @@ alembic/versions/*.pyc
 *.temp
 .tmp/
 
-# Tooling / generated output
-.ua/fingerprints.json
-.ua/knowledge-graph.json
-.ua/meta.json
-.ua/intermediate/
-.ua/tmp/
-.ua/.trash-*/
+# Local AI agent tooling (kept locally, not published)
+.kilo/
+.opencode/
+.ua/
+
+# Generated / tooling output
 graphify-out/
 .commandcode/
+
+# Local-only planning and audit notes
+EXPORT_PLAN.md
+SECURITY_AUDIT.md
 
 # TypeScript incremental build cache
 *.tsbuildinfo

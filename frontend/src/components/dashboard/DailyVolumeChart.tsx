@@ -45,11 +45,11 @@ function DailyTooltip({ active, payload }: DailyTooltipProps) {
     <div className="rounded-control border border-line bg-surface px-3 py-2 text-xs">
       <p className="font-semibold text-ink">{formatDayMonth(point.date)}</p>
       <p className="mt-1 text-ink-2">
-        {point.success} success · {point.failed} failed
-        {point.processing > 0 ? ` · ${point.processing} processing` : ''}
+        {point.success} berhasil · {point.failed} gagal
+        {point.processing > 0 ? ` · ${point.processing} diproses` : ''}
       </p>
       <p className="text-ink-2">
-        Amount: {formatIDR(point.transaction_amount)}
+        Nominal: {formatIDR(point.transaction_amount)}
       </p>
     </div>
   );
@@ -80,12 +80,12 @@ export function DailyVolumeChart({
   if (!points || points.length === 0) {
     return (
       <DashboardCard className="p-5">
-        <h2 className="text-sm font-semibold text-ink">Daily volume</h2>
+        <h2 className="text-sm font-semibold text-ink">Volume harian</h2>
         <p className="mt-1 text-xs text-ink-3">
-          Transaction count with successful value
+          Jumlah transaksi dengan nominal berhasil
         </p>
         <div className="mt-4 flex h-[210px] items-center justify-center rounded-control border border-dashed border-line text-sm text-ink-4">
-          No chart data available.
+          Data grafik tidak tersedia.
         </div>
       </DashboardCard>
     );
@@ -137,35 +137,35 @@ export function DailyVolumeChart({
 
   const subtitle =
     range?.key === 'month'
-      ? 'This month to date'
+      ? 'Bulan ini hingga sekarang'
       : range
-      ? `Last ${range.elapsed_days} days`
-      : 'Selected range';
+      ? `${range.elapsed_days} hari terakhir`
+      : 'Rentang terpilih';
 
   return (
     <DashboardCard className="p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="text-sm font-semibold text-ink">Daily volume</h2>
+          <h2 className="text-sm font-semibold text-ink">Volume harian</h2>
           <p className="mt-1 text-xs text-ink-3">
-            Transaction count with successful value · {subtitle}
+            Jumlah transaksi dengan nominal berhasil · {subtitle}
           </p>
         </div>
         <div className="flex items-center gap-3 text-xs text-ink-3">
           <span className="inline-flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-sm bg-success" aria-hidden="true" />
-            Success
+            Berhasil
           </span>
           <span className="inline-flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-sm bg-danger" aria-hidden="true" />
-            Failed
+            Gagal
           </span>
           <span className="inline-flex items-center gap-1.5">
             <span
               className="h-0.5 w-3.5 rounded bg-primary"
               aria-hidden="true"
             />
-            Amount
+            Nominal
           </span>
         </div>
       </div>
@@ -174,9 +174,9 @@ export function DailyVolumeChart({
         <div
           className="mt-4"
           role="img"
-          aria-label={`Daily transaction count and successful amount, ${totals.total} transactions and ${formatIDR(
+          aria-label={`Jumlah transaksi harian dan nominal berhasil, total ${totals.total} transaksi dan ${formatIDR(
             totals.amount
-          )} in total`}
+          )}`}
         >
           {mounted ? (
             <ResponsiveContainer width="100%" height={210}>
@@ -240,7 +240,7 @@ export function DailyVolumeChart({
                   yAxisId="count"
                   dataKey="success"
                   stackId="trx"
-                  name="Success"
+                  name="Berhasil"
                   fill="#16A34A"
                   radius={2}
                   isAnimationActive={!reducedMotion}
@@ -250,7 +250,7 @@ export function DailyVolumeChart({
                   yAxisId="count"
                   dataKey="failed"
                   stackId="trx"
-                  name="Failed"
+                  name="Gagal"
                   fill="#DC2626"
                   radius={2}
                   isAnimationActive={!reducedMotion}
@@ -260,7 +260,7 @@ export function DailyVolumeChart({
                   yAxisId="amount"
                   type="monotone"
                   dataKey="amount"
-                  name="Amount"
+                  name="Nominal"
                   stroke="#2563EB"
                   strokeWidth={2}
                   dot={false}
@@ -276,17 +276,17 @@ export function DailyVolumeChart({
         </div>
       ) : (
         <div className="mt-4 flex h-[210px] items-center justify-center rounded-control border border-dashed border-line text-sm text-ink-4">
-          No transactions in this range yet.
+          Belum ada transaksi pada rentang ini.
         </div>
       )}
 
       <p className="mt-2 text-xs text-ink-4">
-        Bars: success and failed (left). Line: successful amount (right).{' '}
-        {totals.total} transactions · {formatIDR(totals.amount)}
+        Batang: berhasil dan gagal (kiri). Garis: nominal berhasil (kanan).{' '}
+        {totals.total} transaksi · {formatIDR(totals.amount)}
       </p>
 
       <ChartDataTable
-        columns={['Date', 'Total', 'Success', 'Failed', 'Processing', 'Amount']}
+        columns={['Tanggal', 'Total', 'Berhasil', 'Gagal', 'Diproses', 'Nominal']}
         rows={points.map((point) => [
           formatDayMonth(point.date),
           point.total,

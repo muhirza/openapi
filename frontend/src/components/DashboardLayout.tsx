@@ -34,36 +34,36 @@ interface NavLink {
 
 const NAV_GROUPS: Array<{ title: string; links: NavLink[] }> = [
   {
-    title: 'MAIN',
+    title: 'UTAMA',
     links: [{ href: '/dashboard', label: 'Dashboard', icon: <IconDashboard /> }],
   },
   {
-    title: 'TRANSACTIONS',
+    title: 'TRANSAKSI',
     links: [
-      { href: '/dashboard/transactions/pulsa', label: 'Buy Pulsa', icon: <IconSmartphone /> },
-      { href: '/dashboard/transactions/data-package', label: 'Data Package', icon: <IconPackage /> },
+      { href: '/dashboard/transactions/pulsa', label: 'Beli Pulsa', icon: <IconSmartphone /> },
+      { href: '/dashboard/transactions/data-package', label: 'Paket Data', icon: <IconPackage /> },
       { href: '/dashboard/transactions/cocktail-sf', label: 'Cocktail SF', icon: <IconZap /> },
-      { href: '/dashboard/transactions/package-injection', label: 'Package Injection', icon: <IconDownload /> },
+      { href: '/dashboard/transactions/package-injection', label: 'Injeksi Paket', icon: <IconDownload /> },
     ],
   },
   {
-    title: 'DIGITAL STOCK',
+    title: 'STOK DIGITAL',
     links: [
-      { href: '/dashboard/stock', label: 'Stock', icon: <IconLayers /> },
-      { href: '/dashboard/stock/history', label: 'Stock History', icon: <IconHistory /> },
-      { href: '/dashboard/stock/transactions', label: 'Transaction Info', icon: <IconSearch /> },
+      { href: '/dashboard/stock', label: 'Stok', icon: <IconLayers /> },
+      { href: '/dashboard/stock/history', label: 'Riwayat Stok', icon: <IconHistory /> },
+      { href: '/dashboard/stock/transactions', label: 'Info Transaksi', icon: <IconSearch /> },
     ],
   },
   {
-    title: 'MANAGEMENT',
+    title: 'MANAJEMEN',
     links: [
-      { href: '/dashboard/products', label: 'Products', icon: <IconBoxes /> },
-      { href: '/dashboard/history', label: 'History', icon: <IconHistory /> },
+      { href: '/dashboard/products', label: 'Produk', icon: <IconBoxes /> },
+      { href: '/dashboard/history', label: 'Riwayat', icon: <IconHistory /> },
     ],
   },
   {
-    title: 'SYSTEM',
-    links: [{ href: '/dashboard/config', label: 'API Config', icon: <IconSettings /> }],
+    title: 'SISTEM',
+    links: [{ href: '/dashboard/config', label: 'Konfigurasi API', icon: <IconSettings /> }],
   },
 ];
 
@@ -134,8 +134,8 @@ export function DashboardLayout({ username, onLogout, children }: DashboardLayou
         <button
           onClick={onLogout}
           className="ml-2 p-2 text-ink-4 hover:text-danger hover:bg-danger-subtle rounded-control transition-colors"
-          title="Logout"
-          aria-label="Logout"
+          title="Keluar"
+          aria-label="Keluar"
         >
           <IconLogout size={18} />
         </button>
@@ -144,11 +144,20 @@ export function DashboardLayout({ username, onLogout, children }: DashboardLayou
   );
 
   const brand = (
-    <Link href="/dashboard" className="flex items-center" onClick={() => setDrawerOpen(false)}>
+    <Link
+      href="/dashboard"
+      className="flex min-w-0 items-center"
+      onClick={() => setDrawerOpen(false)}
+    >
       <span className="w-8 h-8 rounded-surface bg-primary text-white flex items-center justify-center shrink-0">
         <IconWallet size={18} />
       </span>
-      <span className="ml-2.5 text-base font-bold text-ink truncate">Transaction Dashboard</span>
+      <span className="ml-2.5 min-w-0 leading-tight">
+        <span className="block truncate text-sm font-bold text-ink">OPEN API SIDIVA</span>
+        <span className="block truncate text-2xs font-semibold uppercase tracking-wider text-ink-4">
+          Dashboard
+        </span>
+      </span>
     </Link>
   );
 
@@ -167,12 +176,14 @@ export function DashboardLayout({ username, onLogout, children }: DashboardLayou
           <button
             onClick={() => setDrawerOpen(true)}
             className="p-2 -ml-2 text-ink-2 hover:text-ink hover:bg-line rounded-control"
-            aria-label="Open menu"
+            aria-label="Buka menu"
           >
             <IconMenu size={24} />
           </button>
-          <span className="text-base font-bold text-ink">Transaction Dashboard</span>
-          <div className="w-8 h-8 rounded-full bg-primary-subtle text-primary-hover flex items-center justify-center font-semibold text-sm">
+          <span className="min-w-0 flex-1 truncate px-2 text-center text-sm font-bold text-ink">
+            OPEN API SIDIVA Dashboard
+          </span>
+          <div className="w-8 h-8 shrink-0 rounded-full bg-primary-subtle text-primary-hover flex items-center justify-center font-semibold text-sm">
             {username.charAt(0).toUpperCase()}
           </div>
         </div>
@@ -192,7 +203,7 @@ export function DashboardLayout({ username, onLogout, children }: DashboardLayou
               <button
                 onClick={() => setDrawerOpen(false)}
                 className="p-2 -mr-2 text-ink-4 hover:text-ink-2 hover:bg-line rounded-control"
-                aria-label="Close menu"
+                aria-label="Tutup menu"
               >
                 <IconX size={22} />
               </button>

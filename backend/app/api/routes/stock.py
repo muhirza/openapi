@@ -23,7 +23,7 @@ async def get_stock(
 ):
     """Digital stock for the AWG or XWG family."""
     if family.lower() not in SUPPORTED_FAMILIES:
-        raise HTTPException(status_code=404, detail="Unknown stock family")
+        raise HTTPException(status_code=404, detail="Keluarga stok tidak dikenal")
 
     svc = StockService(db)
     try:

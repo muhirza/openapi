@@ -114,7 +114,7 @@ export function ProductSelect({ value, onChange, productType, excludeProductType
               setSearch('');
             }
           }}
-          placeholder={productType ? `Search ${productType} products...` : 'Search product name, code, or brand...'}
+          placeholder={productType ? `Cari produk ${productType}...` : 'Cari nama produk, kode, atau brand...'}
           className="block w-full rounded-control border border-line-strong pl-3 pr-3 py-2 text-sm focus:border-primary focus:ring-primary"
         />
       ) : (
@@ -123,7 +123,7 @@ export function ProductSelect({ value, onChange, productType, excludeProductType
           onClick={() => setOpen(true)}
           className="block w-full text-left rounded-control border border-line-strong pl-3 pr-3 py-2 text-sm bg-surface hover:border-ink-4 focus:border-primary focus:ring-primary"
         >
-          {selected ? formatLabel(selected) : 'Search products...'}
+          {selected ? formatLabel(selected) : 'Cari produk...'}
         </button>
       )}
 
@@ -132,7 +132,7 @@ export function ProductSelect({ value, onChange, productType, excludeProductType
         <div className="absolute z-20 mt-1 w-full max-h-64 overflow-y-auto rounded-control border border-line bg-surface shadow-lg">
           {filtered.length === 0 ? (
             <div className="px-3 py-2 text-sm text-ink-4">
-              {productType ? `No ${productType} products found.` : 'No products found.'}
+              {productType ? `Produk ${productType} tidak ditemukan.` : 'Produk tidak ditemukan.'}
             </div>
           ) : (
             filtered.map((p, i) => (

@@ -14,7 +14,7 @@ export function ChartDataTable({
   columns,
   rows,
   footer,
-  label = 'Show data',
+  label = 'Tampilkan data',
 }: ChartDataTableProps) {
   const [open, setOpen] = useState(false);
   const panelId = useId();
@@ -28,7 +28,7 @@ export function ChartDataTable({
         onClick={() => setOpen((value) => !value)}
         className="rounded text-xs font-medium text-primary transition-colors hover:text-primary-hover hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
       >
-        {open ? 'Hide data' : label}
+        {open ? 'Sembunyikan data' : label}
       </button>
 
       <div

@@ -23,6 +23,7 @@ class LocalTransaction(Base):
     product_code: Mapped[str | None] = mapped_column(String(255), nullable=True)
     product_name: Mapped[str | None] = mapped_column(String(500), nullable=True)
     product_type: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    brand: Mapped[str | None] = mapped_column(String(50), nullable=True)
     amount: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)
     status: Mapped[str] = mapped_column(String(50), nullable=False)
     provider_reference: Mapped[str | None] = mapped_column(String(255), nullable=True)

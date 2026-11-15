@@ -218,12 +218,12 @@ export const api = {
     const match = /filename="?([^";]+)"?/i.exec(disposition);
     const fallback =
       opts.startDate && opts.endDate
-        ? `TransactionHistory_${opts.startDate}_to_${opts.endDate}.xlsx`
+        ? `RiwayatTransaksi_${opts.startDate}_sampai_${opts.endDate}.xlsx`
         : opts.startDate
-        ? `TransactionHistory_from_${opts.startDate}.xlsx`
+        ? `RiwayatTransaksi_dari_${opts.startDate}.xlsx`
         : opts.endDate
-        ? `TransactionHistory_until_${opts.endDate}.xlsx`
-        : `TransactionHistory_${new Date().toISOString().slice(0, 10)}.xlsx`;
+        ? `RiwayatTransaksi_hingga_${opts.endDate}.xlsx`
+        : `RiwayatTransaksi_${new Date().toISOString().slice(0, 10)}.xlsx`;
     const filename = match ? match[1] : fallback;
 
     const blob = await res.blob();

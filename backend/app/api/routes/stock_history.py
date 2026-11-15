@@ -29,7 +29,7 @@ STOCK_FAMILIES = ("awg", "xwg")
 
 def _require_family(family: str) -> None:
     if family not in STOCK_FAMILIES:
-        raise HTTPException(status_code=404, detail="Unknown stock family")
+        raise HTTPException(status_code=404, detail="Keluarga stok tidak dikenal")
 
 
 async def _get_record(
@@ -44,7 +44,7 @@ async def _get_record(
     )
     record = result.scalar_one_or_none()
     if not record:
-        raise HTTPException(status_code=404, detail="Stock transaction not found")
+        raise HTTPException(status_code=404, detail="Transaksi stok tidak ditemukan")
     return record
 
 
@@ -212,7 +212,7 @@ async def lookup_stock_transaction_info(
         parts = [result.error_code, result.error_message]
         detail = " ".join(str(p) for p in parts if p and p != "Unknown error")
         raise HTTPException(
-            status_code=502, detail=detail or "Provider detail lookup failed"
+            status_code=502, detail=detail or "Pencarian detail ke penyedia gagal"
         )
 
     rows = service.parse_detail_rows(result.data, payload.master_trx_id)

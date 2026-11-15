@@ -8,12 +8,12 @@ import { StatusBadge } from './StatusBadge';
 import Link from 'next/link';
 
 const TYPE_LABELS: Record<string, string> = {
-  buy_pulsa: 'Buy Pulsa',
-  buy_data_package: 'Data Package',
+  buy_pulsa: 'Beli Pulsa',
+  buy_data_package: 'Paket Data',
   cocktail_sf: 'Cocktail SF',
-  package_injection: 'Package Injection',
-  inject_awg: 'Inject AWG',
-  inject_xwg: 'Inject XWG',
+  package_injection: 'Injeksi Paket',
+  inject_awg: 'Injeksi AWG',
+  inject_xwg: 'Injeksi XWG',
 };
 
 function typeLabel(type: string | null | undefined): string {
@@ -34,7 +34,7 @@ export function TopTransactions() {
       const res = await api.getLocalTransactions({ page: 1, perPage: 5 });
       setItems(res.items);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load transactions');
+      setError(err instanceof Error ? err.message : 'Gagal memuat transaksi');
     } finally {
       setLoading(false);
     }
@@ -47,7 +47,7 @@ export function TopTransactions() {
   return (
     <div className="bg-surface rounded-surface border border-line p-6">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-ink">Latest transactions</h2>
+        <h2 className="text-lg font-semibold text-ink">Transaksi terbaru</h2>
         <div className="flex items-center gap-2">
           <button
             onClick={load}
@@ -68,13 +68,13 @@ export function TopTransactions() {
             >
               <path d="M21 12a9 9 0 1 1-3-6.7M21 3v6h-6" />
             </svg>
-            {loading ? 'Refreshing...' : 'Refresh'}
+            {loading ? 'Memuat ulang...' : 'Muat ulang'}
           </button>
           <Link
             href="/dashboard/history"
             className="text-sm text-primary hover:text-primary-hover hover:bg-line font-medium flex items-center gap-1 px-2.5 py-1.5 rounded-control transition-colors"
           >
-            View all
+            Lihat semua
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M5 12h14M12 5l7 7-7 7" />
             </svg>
@@ -90,26 +90,26 @@ export function TopTransactions() {
             <line x1="12" y1="16" x2="12.01" y2="16" />
           </svg>
           <div>
-            <p className="font-medium">Unable to load transactions</p>
+            <p className="font-medium">Gagal memuat transaksi</p>
             <p className="text-xs text-danger mt-0.5">{error}</p>
           </div>
         </div>
       )}
 
       {loading && items.length === 0 ? (
-        <div className="text-center py-8 text-ink-4">Loading...</div>
+        <div className="text-center py-8 text-ink-4">Memuat...</div>
       ) : items.length === 0 ? (
-        <div className="text-center py-8 text-ink-4">No transactions yet.</div>
+        <div className="text-center py-8 text-ink-4">Belum ada transaksi.</div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-xs font-semibold text-ink-3 uppercase tracking-wider border-b border-line">
-                <th className="pb-2 pr-4">Product</th>
+                <th className="pb-2 pr-4">Produk</th>
                 <th className="pb-2 pr-4 hidden md:table-cell">MSISDN</th>
                 <th className="pb-2 pr-4">Status</th>
-                <th className="pb-2 pr-4 text-right">Amount</th>
-                <th className="pb-2 text-right">Date</th>
+                <th className="pb-2 pr-4 text-right">Nominal</th>
+                <th className="pb-2 text-right">Tanggal</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
