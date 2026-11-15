@@ -14,28 +14,28 @@ import Link from 'next/link';
 
 const SERVICE_TYPES: Record<StockFamily, { value: StockServiceType; label: string }[]> = {
   awg: [
-    { value: 'SELLVOUCHER', label: 'Inject SP' },
-    { value: 'PHYSICALVOUCHER', label: 'Inject Voucher' },
-    { value: 'TRANSFER', label: 'Receive Transfer Stock' },
-    { value: 'BUYSTOCK', label: 'Buy Stock (Mini Grosir)' },
-    { value: 'EXTENDSTOCK', label: 'Extend Stock WG' },
+    { value: 'SELLVOUCHER', label: 'Injeksi SP' },
+    { value: 'PHYSICALVOUCHER', label: 'Injeksi Voucher' },
+    { value: 'TRANSFER', label: 'Terima Transfer Stok' },
+    { value: 'BUYSTOCK', label: 'Beli Stok (Mini Grosir)' },
+    { value: 'EXTENDSTOCK', label: 'Perpanjang Stok WG' },
   ],
   xwg: [
-    { value: 'SELLVOUCHER', label: 'Inject SP' },
-    { value: 'PHYSICALVOUCHER', label: 'Inject Voucher' },
-    { value: 'TRANSFER', label: 'Receive Transfer Stock' },
-    { value: 'BUYSTOCK', label: 'Buy Stock (Mini Grosir)' },
-    { value: 'EXTENDSTOCK', label: 'Extend Stock WG' },
-    { value: 'TRFBALANCE', label: 'Transfer Balance to Parent' },
-    { value: 'TEMBAKSTOK', label: 'Inject Stock Parent' },
+    { value: 'SELLVOUCHER', label: 'Injeksi SP' },
+    { value: 'PHYSICALVOUCHER', label: 'Injeksi Voucher' },
+    { value: 'TRANSFER', label: 'Terima Transfer Stok' },
+    { value: 'BUYSTOCK', label: 'Beli Stok (Mini Grosir)' },
+    { value: 'EXTENDSTOCK', label: 'Perpanjang Stok WG' },
+    { value: 'TRFBALANCE', label: 'Transfer Saldo ke Parent' },
+    { value: 'TEMBAKSTOK', label: 'Injeksi Stok Parent' },
   ],
 };
 
 const STATUS_CHIPS = [
-  { key: '', label: 'All', tone: 'gray', count: (s: { total: number }) => s.total },
-  { key: 'SUCCESS', label: 'Success', tone: 'green', count: (s: { success: number }) => s.success },
-  { key: 'FAILED', label: 'Failed', tone: 'red', count: (s: { failed: number }) => s.failed },
-  { key: 'PROCESSING', label: 'Processing', tone: 'amber', count: (s: { processing: number }) => s.processing },
+  { key: '', label: 'Semua', tone: 'gray', count: (s: { total: number }) => s.total },
+  { key: 'SUCCESS', label: 'Berhasil', tone: 'green', count: (s: { success: number }) => s.success },
+  { key: 'FAILED', label: 'Gagal', tone: 'red', count: (s: { failed: number }) => s.failed },
+  { key: 'PROCESSING', label: 'Diproses', tone: 'amber', count: (s: { processing: number }) => s.processing },
 ] as const;
 
 const CHIP_ACTIVE: Record<string, string> = {
@@ -76,12 +76,12 @@ function RefCell({
       <button
         type="button"
         onClick={() => onCopy(key, value)}
-        title={`${value} — click to copy`}
+        title={`${value} — klik untuk salin`}
         className="min-w-0 flex-1 break-all text-left text-2xs leading-snug font-mono text-ink-2 hover:text-primary-hover hover:underline"
       >
         {value}
       </button>
-      {copiedKey === key && <span className="shrink-0 text-2xs text-success-strong">copied</span>}
+      {copiedKey === key && <span className="shrink-0 text-2xs text-success-strong">tersalin</span>}
     </div>
   );
 }
@@ -135,7 +135,7 @@ export default function StockHistoryPage() {
       });
       setData(res);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load stock history');
+      setError(err instanceof Error ? err.message : 'Gagal memuat riwayat stok');
     } finally {
       setLoading(false);
     }
@@ -156,7 +156,7 @@ export default function StockHistoryPage() {
       await api.refreshStockHistoryDetail(family, id);
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to re-check status');
+      setError(err instanceof Error ? err.message : 'Gagal memeriksa ulang status');
     } finally {
       setRecheckingId(null);
     }
@@ -177,18 +177,18 @@ export default function StockHistoryPage() {
     <DashboardShell>
       <div>
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-ink">Stock History</h1>
+          <h1 className="text-2xl font-bold text-ink">Riwayat Stok</h1>
           <p className="mt-1 text-sm text-ink-3">
-            Digital stock operations executed in this system (inject SP, inject voucher), kept
-            separate from the non-stock transaction history. Status is checked via the
-            provider&apos;s Info Transaction Detail API.
+            Operasi stok digital yang dijalankan di sistem ini (injeksi SP, injeksi voucher),
+            terpisah dari riwayat transaksi non-stok. Status diperiksa melalui
+            API Info Transaction Detail milik penyedia.
           </p>
         </div>
 
         <div className="bg-surface rounded-surface shadow border p-6">
           {/* Filters */}
           <div className="flex flex-wrap items-center gap-3 mb-4">
-            <div className="inline-flex rounded-control border border-line-strong p-0.5 text-sm" role="group" aria-label="Stock family">
+            <div className="inline-flex rounded-control border border-line-strong p-0.5 text-sm" role="group" aria-label="Keluarga stok">
               {(['xwg', 'awg'] as const).map((value) => (
                 <button
                   key={value}
@@ -210,29 +210,29 @@ export default function StockHistoryPage() {
               type="search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search description, voucher code, or masterTrxId..."
-              aria-label="Search stock history"
+              placeholder="Cari deskripsi, kode voucher, atau masterTrxId..."
+              aria-label="Cari riwayat stok"
               className="w-72 rounded-control border border-line-strong px-3 py-2 text-sm focus:border-primary focus:ring-primary"
             />
             <select
               value={filterService}
               onChange={(e) => setFilterService(e.target.value)}
-              aria-label="Filter by service type"
+              aria-label="Filter berdasarkan tipe layanan"
               className="w-52 rounded-control border border-line-strong px-3 py-2 text-sm focus:border-primary focus:ring-primary"
             >
-              <option value="">All Operations</option>
+              <option value="">Semua Operasi</option>
               {SERVICE_TYPES[family].map((t) => (
                 <option key={t.value} value={t.value}>
                   {t.label}
                 </option>
               ))}
             </select>
-            <div className="inline-flex rounded-control border border-line-strong p-0.5 text-sm" role="group" aria-label="Filter by date range">
+            <div className="inline-flex rounded-control border border-line-strong p-0.5 text-sm" role="group" aria-label="Filter berdasarkan rentang tanggal">
               {([
-                ['all', 'All time'],
-                ['today', 'Today'],
-                ['7d', '7 days'],
-                ['30d', '30 days'],
+                ['all', 'Semua waktu'],
+                ['today', 'Hari ini'],
+                ['7d', '7 hari'],
+                ['30d', '30 hari'],
               ] as const).map(([value, label]) => (
                 <button
                   key={value}
@@ -258,7 +258,7 @@ export default function StockHistoryPage() {
                 }}
                 className="text-sm text-ink-3 hover:text-ink-2 underline"
               >
-                Clear filters
+                Hapus filter
               </button>
             )}
           </div>
@@ -313,14 +313,14 @@ export default function StockHistoryPage() {
               </colgroup>
               <thead>
                 <tr className="text-left text-2xs font-semibold text-ink-3 uppercase tracking-wider">
-                  <th className="pb-2 pr-3">Date</th>
-                  <th className="pb-2 pr-3">Operation</th>
-                  <th className="pb-2 pr-3">Product</th>
-                  <th className="pb-2 pr-3">Destination</th>
-                  <th className="pb-2 pr-3 text-right">Price</th>
+                  <th className="pb-2 pr-3">Tanggal</th>
+                  <th className="pb-2 pr-3">Operasi</th>
+                  <th className="pb-2 pr-3">Produk</th>
+                  <th className="pb-2 pr-3">Tujuan</th>
+                  <th className="pb-2 pr-3 text-right">Harga</th>
                   <th className="pb-2 pr-3">Status</th>
-                  <th className="pb-2 pr-3">Reference</th>
-                  <th className="pb-2 text-right">Action</th>
+                  <th className="pb-2 pr-3">Referensi</th>
+                  <th className="pb-2 text-right">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
@@ -346,7 +346,7 @@ export default function StockHistoryPage() {
                 ) : !data || data.items.length === 0 ? (
                   <tr>
                     <td colSpan={8} className="py-8 text-center text-ink-4">
-                      No stock transactions found.
+                      Riwayat stok tidak ditemukan.
                     </td>
                   </tr>
                 ) : (
@@ -379,8 +379,8 @@ export default function StockHistoryPage() {
                           {tx.destination_msisdn || '—'}
                         </span>
                         {tx.source_msisdn && (
-                          <span className="block truncate text-2xs text-ink-4" title={`from ${tx.source_msisdn}`}>
-                            from {tx.source_msisdn}
+                          <span className="block truncate text-2xs text-ink-4" title={`dari ${tx.source_msisdn}`}>
+                            dari {tx.source_msisdn}
                           </span>
                         )}
                       </td>
@@ -417,7 +417,7 @@ export default function StockHistoryPage() {
                             disabled={recheckingId === tx.id}
                             className="text-xs text-ink-2 hover:text-ink underline disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            {recheckingId === tx.id ? 'Checking...' : 'Re-check'}
+                            {recheckingId === tx.id ? 'Memeriksa...' : 'Periksa ulang'}
                           </button>
                         </div>
                       </td>
@@ -439,7 +439,7 @@ export default function StockHistoryPage() {
                 </div>
               ))
             ) : !data || data.items.length === 0 ? (
-              <p className="py-8 text-center text-ink-4">No stock transactions found.</p>
+              <p className="py-8 text-center text-ink-4">Riwayat stok tidak ditemukan.</p>
             ) : (
               data.items.map((tx) => (
                 <div key={tx.id} className="rounded-surface border border-line p-4">
@@ -454,21 +454,21 @@ export default function StockHistoryPage() {
                   </div>
                   <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs">
                     <div className="flex justify-between col-span-2">
-                      <dt className="text-ink-3">Product</dt>
+                      <dt className="text-ink-3">Produk</dt>
                       <dd className="truncate text-ink-2" title={tx.description || undefined}>
                         {tx.description || '—'}
                       </dd>
                     </div>
                     <div className="flex justify-between col-span-2">
-                      <dt className="text-ink-3">Date</dt>
+                      <dt className="text-ink-3">Tanggal</dt>
                       <dd className="text-ink-2 tabular-nums">{formatDateOnly(tx.created_dtm)}</dd>
                     </div>
                     <div className="flex justify-between col-span-2">
-                      <dt className="text-ink-3">Destination</dt>
+                      <dt className="text-ink-3">Tujuan</dt>
                       <dd className="text-ink-2 tabular-nums">{tx.destination_msisdn || '—'}</dd>
                     </div>
                     <div className="flex justify-between col-span-2">
-                      <dt className="text-ink-3">Price</dt>
+                      <dt className="text-ink-3">Harga</dt>
                       <dd className="font-semibold text-ink tabular-nums">
                         {tx.voucher_price ? formatIDR(tx.voucher_price) : '—'}
                       </dd>
@@ -495,7 +495,7 @@ export default function StockHistoryPage() {
                       disabled={recheckingId === tx.id}
                       className="text-xs text-ink-2 hover:text-ink underline disabled:opacity-50"
                     >
-                      {recheckingId === tx.id ? 'Checking...' : 'Re-check'}
+                      {recheckingId === tx.id ? 'Memeriksa...' : 'Periksa ulang'}
                     </button>
                   </div>
                 </div>
@@ -507,7 +507,7 @@ export default function StockHistoryPage() {
           {data && data.total > 0 && (
             <div className="mt-4 px-1 py-4 border-t flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <span className="text-sm text-ink-2">
-                Page {data.page} of {data.total_pages} ({data.total} total)
+                Halaman {data.page} dari {data.total_pages} ({data.total} total)
               </span>
               <div className="flex items-center gap-2">
                 <button
@@ -515,14 +515,14 @@ export default function StockHistoryPage() {
                   disabled={data.page <= 1}
                   className="px-3 py-1.5 text-sm border border-line-strong rounded-control disabled:opacity-50 disabled:cursor-not-allowed hover:bg-canvas"
                 >
-                  Prev
+                  Sebelumnya
                 </button>
                 <button
                   onClick={() => setPage((p) => Math.min(data.total_pages, p + 1))}
                   disabled={data.page >= data.total_pages}
                   className="px-3 py-1.5 text-sm border border-line-strong rounded-control disabled:opacity-50 disabled:cursor-not-allowed hover:bg-canvas"
                 >
-                  Next
+                  Berikutnya
                 </button>
               </div>
             </div>

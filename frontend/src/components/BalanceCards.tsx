@@ -12,13 +12,13 @@ import { DashboardCard } from './dashboard/DashboardCard';
 const BALANCE_CARDS = [
   {
     key: 'eload' as const,
-    title: 'Eload Balance',
+    title: 'Saldo Eload',
     subtitle: 'Saldo Eload',
     icon: <IconZap size={20} />,
   },
   {
     key: 'dompul' as const,
-    title: 'Dompul Balance',
+    title: 'Saldo Dompul',
     subtitle: 'Saldo Dompul',
     icon: <IconWallet size={20} />,
   },
@@ -40,7 +40,7 @@ export function BalanceCards({ compact = false }: BalanceCardsProps) {
       const data = await api.getBalances();
       setSummary(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load balances');
+      setError(err instanceof Error ? err.message : 'Gagal memuat saldo');
     } finally {
       setLoading(false);
     }
@@ -53,7 +53,7 @@ export function BalanceCards({ compact = false }: BalanceCardsProps) {
   const errorBanner = error ? (
     <div className="bg-danger-subtle border border-danger-border text-danger-strong px-4 py-3 rounded-control flex items-start">
       <IconAlertCircle size={16} className="mt-0.5 mr-2 shrink-0" />
-      <span className="text-sm">Unable to load balances. {error}</span>
+      <span className="text-sm">Gagal memuat saldo. {error}</span>
     </div>
   ) : null;
 
@@ -73,8 +73,8 @@ export function BalanceCards({ compact = false }: BalanceCardsProps) {
                 type="button"
                 onClick={load}
                 disabled={loading}
-                aria-label="Refresh balances"
-                title="Refresh balances"
+                aria-label="Muat ulang saldo"
+                title="Muat ulang saldo"
                 className="rounded-control p-1.5 text-ink-4 transition-colors hover:bg-surface-muted hover:text-ink-2 disabled:opacity-50"
               >
                 <IconRefresh
@@ -101,20 +101,20 @@ export function BalanceCards({ compact = false }: BalanceCardsProps) {
 
         {data?.fetched_at && !failed && (
           <p className="mt-1 text-xs text-ink-4">
-            Updated {formatRelative(data.fetched_at)}
+            Diperbarui {formatRelative(data.fetched_at)}
           </p>
         )}
 
         {failed && (
           <div className="mt-1.5">
             <p className="text-xs font-medium text-warning-strong">
-              Unable to retrieve balance
+              Gagal mengambil saldo
             </p>
             <Link
               href="/dashboard/config"
               className="mt-0.5 inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-hover hover:underline"
             >
-              Check API Config
+              Periksa Konfigurasi API
               <svg
                 width="12"
                 height="12"
@@ -149,14 +149,14 @@ export function BalanceCards({ compact = false }: BalanceCardsProps) {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-ink">Account Balances</h2>
+        <h2 className="text-lg font-semibold text-ink">Saldo Akun</h2>
         <button
           onClick={load}
           disabled={loading}
           className="text-sm text-primary hover:text-primary-hover hover:bg-line font-medium disabled:opacity-50 flex items-center gap-1.5 px-2.5 py-1.5 rounded-control transition-colors"
         >
           <IconRefresh size={14} className={loading ? 'animate-spin' : ''} />
-          {loading ? 'Refreshing...' : 'Refresh'}
+          {loading ? 'Memuat ulang...' : 'Muat ulang'}
         </button>
       </div>
 

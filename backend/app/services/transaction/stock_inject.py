@@ -36,7 +36,7 @@ class StockInjectService(TransactionServiceBase):
     def __init__(self, db: AsyncSession, family: str = "awg"):
         super().__init__(db)
         if family not in ("awg", "xwg"):
-            raise ValueError(f"Unsupported stock family: {family}")
+            raise ValueError(f"Keluarga stok tidak didukung: {family}")
         self.family = family
 
     @property
@@ -53,8 +53,8 @@ class StockInjectService(TransactionServiceBase):
         creds = await self.token_svc.get_credentials_by_name(user_id, api_name)
         if not creds:
             raise TokenFetchError(
-                f"No credentials configured for {self.family.upper()} Inject Stock. "
-                "Add them in API Config."
+                f"Belum ada kredensial untuk Injeksi Stok {self.family.upper()}. "
+                "Tambahkan di Konfigurasi API."
             )
         return await self._get_token_and_creds(user_id, api_name)
 
@@ -70,7 +70,7 @@ class StockInjectService(TransactionServiceBase):
     ) -> StockTransaction:
         clean_targets = [t.strip() for t in targets if t and t.strip()]
         if not clean_targets:
-            raise ValueError("At least one target MSISDN is required")
+            raise ValueError("Setidaknya satu MSISDN tujuan diperlukan")
 
         # 1. Inject credentials -> 2. PIN (stored encrypted) -> 3. encrypt via provider
         token, api_id, api_key = await self._get_inject_creds(user_id)

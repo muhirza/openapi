@@ -25,7 +25,7 @@ async def register(payload: RegisterRequest, db: AsyncSession = Depends(get_db))
     # Check if user exists
     result = await db.execute(select(User).where(User.username == payload.username))
     if result.scalar_one_or_none():
-        raise HTTPException(status_code=400, detail="Username already taken")
+        raise HTTPException(status_code=400, detail="Nama pengguna sudah digunakan")
 
     hashed = hash_password(payload.password)
     user = User(username=payload.username, password_hash=hashed)
@@ -46,7 +46,7 @@ async def login(
     if not user or not verify_password(payload.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid credentials",
+            detail="Nama pengguna atau kata sandi salah",
         )
 
     session_svc = SessionService(db)

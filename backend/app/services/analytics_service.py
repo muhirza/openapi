@@ -77,7 +77,7 @@ class AnalyticsService:
         in full, so `end` is the start of tomorrow.
         """
         if range_key not in RANGE_DAYS and range_key != "month":
-            raise ValueError(f"Unsupported analytics range: {range_key}")
+            raise ValueError(f"Rentang analitik tidak didukung: {range_key}")
 
         current = now or datetime.now(timezone.utc)
         if current.tzinfo is None:
@@ -215,7 +215,9 @@ class AnalyticsService:
     @staticmethod
     def _brand_expr():
         return func.coalesce(
-            func.nullif(func.trim(Product.owner), ""), UNKNOWN_BRAND
+            func.nullif(func.trim(LocalTransaction.brand), ""),
+            func.nullif(func.trim(Product.owner), ""),
+            UNKNOWN_BRAND,
         )
 
     @staticmethod

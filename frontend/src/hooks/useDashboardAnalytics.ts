@@ -27,7 +27,7 @@ export function useDashboardAnalytics(range: AnalyticsRange) {
       .catch((err) => {
         if (!cancelled) {
           setError(
-            err instanceof Error ? err.message : 'Failed to load analytics'
+            err instanceof Error ? err.message : 'Gagal memuat analitik'
           );
         }
       })

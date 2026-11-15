@@ -11,20 +11,20 @@ export function formatIDR(value: string | number | null | undefined): string {
   }).format(num);
 }
 
-/** English month abbreviations for deterministic formatting */
-const EN_MONTHS = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+/** Indonesian month abbreviations for deterministic formatting */
+const MONTHS = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+  'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des',
 ];
 
-/** Format ISO date string to deterministic "4 Oct 2026, 21:00" (English month, 24h) */
+/** Format ISO date string to deterministic "4 Okt 2026, 21:00" (Indonesian month, 24h) */
 export function formatDate(dateStr: string | null | undefined): string {
   if (!dateStr) return '—';
   try {
     const d = new Date(dateStr);
     if (isNaN(d.getTime())) return dateStr;
     const day = d.getDate();
-    const month = EN_MONTHS[d.getMonth()];
+    const month = MONTHS[d.getMonth()];
     const year = d.getFullYear();
     const hour = d.getHours().toString().padStart(2, '0');
     const minute = d.getMinutes().toString().padStart(2, '0');
@@ -34,14 +34,14 @@ export function formatDate(dateStr: string | null | undefined): string {
   }
 }
 
-/** Format just the date part: "4 Oct 2026" */
+/** Format just the date part: "4 Okt 2026" */
 export function formatDateOnly(dateStr: string | null | undefined): string {
   if (!dateStr) return '—';
   try {
     const d = new Date(dateStr);
     if (isNaN(d.getTime())) return dateStr;
     const day = d.getDate();
-    const month = EN_MONTHS[d.getMonth()];
+    const month = MONTHS[d.getMonth()];
     const year = d.getFullYear();
     return `${day} ${month} ${year}`;
   } catch {
@@ -63,7 +63,7 @@ export function formatTime(dateStr: string | null | undefined): string {
   }
 }
 
-/** Short relative time (e.g., "2 days ago") */
+/** Short relative time (e.g., "2 hari lalu") */
 export function formatRelative(dateStr: string | null | undefined): string {
   if (!dateStr) return '—';
   try {
@@ -73,10 +73,10 @@ export function formatRelative(dateStr: string | null | undefined): string {
     const diffHour = Math.floor(diffMin / 60);
     const diffDay = Math.floor(diffHour / 24);
 
-    if (diffDay > 0) return `${diffDay} day${diffDay > 1 ? 's' : ''} ago`;
-    if (diffHour > 0) return `${diffHour} hour${diffHour > 1 ? 's' : ''} ago`;
-    if (diffMin > 0) return `${diffMin} minute${diffMin > 1 ? 's' : ''} ago`;
-    return 'Just now';
+    if (diffDay > 0) return `${diffDay} hari lalu`;
+    if (diffHour > 0) return `${diffHour} jam lalu`;
+    if (diffMin > 0) return `${diffMin} menit lalu`;
+    return 'Baru saja';
   } catch {
     return dateStr;
   }
@@ -127,7 +127,7 @@ export function formatMonthShort(dateStr: string | null | undefined): string {
   const parts = dateStr.split('-');
   if (parts.length < 2) return '—';
   const monthIndex = Number(parts[1]) - 1;
-  return EN_MONTHS[monthIndex] ?? '—';
+  return MONTHS[monthIndex] ?? '—';
 }
 
 /** Get "8 Nov" from an ISO date without timezone shifts. */
@@ -136,7 +136,7 @@ export function formatDayMonth(dateStr: string | null | undefined): string {
   const parts = dateStr.split('-');
   if (parts.length < 3) return dateStr;
   const monthIndex = Number(parts[1]) - 1;
-  return `${Number(parts[2])} ${EN_MONTHS[monthIndex] ?? ''}`.trim();
+  return `${Number(parts[2])} ${MONTHS[monthIndex] ?? ''}`.trim();
 }
 
 /** Compact rupiah for chart axes, e.g. 18250 -> "18k", 1500000 -> "1.5jt". */

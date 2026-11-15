@@ -18,20 +18,20 @@ interface TokenState {
 function deriveTokenState(status: TokenStatus | null): TokenState {
   if (!status || !status.has_token) {
     return {
-      label: 'NO TOKEN',
+      label: 'TIDAK ADA TOKEN',
       dotClass: 'bg-ink-4',
       textClass: 'text-ink-3',
       pillClass: 'bg-line text-ink-2',
-      message: 'No API token configured yet.',
+      message: 'Belum ada token API yang dikonfigurasi.',
     };
   }
   if (!status.is_valid) {
     return {
-      label: 'EXPIRED',
+      label: 'KEDALUWARSA',
       dotClass: 'bg-danger',
       textClass: 'text-danger',
       pillClass: 'bg-danger-subtle text-danger-strong',
-      message: 'Your API token has expired.',
+      message: 'Token API Anda telah kedaluwarsa.',
     };
   }
   // is_valid === true: check if expiring soon (< 10 minutes)
@@ -39,20 +39,20 @@ function deriveTokenState(status: TokenStatus | null): TokenState {
     const expMs = new Date(status.expires_at).getTime();
     if (!isNaN(expMs) && expMs - Date.now() < 10 * 60 * 1000) {
       return {
-        label: 'EXPIRING SOON',
+        label: 'SEGERA KEDALUWARSA',
         dotClass: 'bg-warning',
         textClass: 'text-warning',
         pillClass: 'bg-warning-subtle text-warning-strong',
-        message: 'Your API token will expire soon. Consider refreshing it.',
+        message: 'Token API Anda akan segera kedaluwarsa. Pertimbangkan untuk memuat ulang.',
       };
     }
   }
   return {
-    label: 'ACTIVE',
+    label: 'AKTIF',
     dotClass: 'bg-success',
     textClass: 'text-success-strong',
     pillClass: 'bg-success-subtle text-success-strong',
-    message: 'Your API token is active.',
+    message: 'Token API Anda aktif.',
   };
 }
 
@@ -90,13 +90,13 @@ export function TokenCard({ compact = false }: TokenCardProps) {
     try {
       const result = await api.refreshToken();
       if (result.success) {
-        setMessage('Token refreshed successfully');
+        setMessage('Token berhasil dimuat ulang');
         await loadStatus();
       } else {
-        setError(result.error || 'Failed to refresh token');
+        setError(result.error || 'Gagal memuat ulang token');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to refresh token');
+      setError(err instanceof Error ? err.message : 'Gagal memuat ulang token');
     } finally {
       setLoading(false);
     }
@@ -106,7 +106,7 @@ export function TokenCard({ compact = false }: TokenCardProps) {
 
   if (compact) {
     const pending = !status && !loadError;
-    const label = pending ? 'CHECKING' : status ? state.label : 'UNKNOWN';
+    const label = pending ? 'MEMERIKSA' : status ? state.label : 'TIDAK DIKETAHUI';
     const pillClass =
       pending || !status ? 'bg-line text-ink-2' : state.pillClass;
     const dotClass = pending || !status ? 'bg-ink-4' : state.dotClass;
@@ -125,11 +125,11 @@ export function TokenCard({ compact = false }: TokenCardProps) {
 
         <p className="mt-3 text-sm font-semibold text-ink">
           {pending
-            ? 'Checking token…'
+            ? 'Memeriksa token…'
             : !status
-            ? 'Unable to load token status.'
+            ? 'Gagal memuat status token.'
             : status.has_token && status.is_valid && status.expires_at
-            ? `Expires ${formatDate(status.expires_at)}`
+            ? `Kedaluwarsa ${formatDate(status.expires_at)}`
             : state.message}
         </p>
 
@@ -139,7 +139,7 @@ export function TokenCard({ compact = false }: TokenCardProps) {
           )}
           {error && <p className="text-xs text-danger-strong">{error}</p>}
           {loadError && !status && (
-            <p className="text-xs text-warning-strong">Try refreshing below.</p>
+            <p className="text-xs text-warning-strong">Coba muat ulang di bawah.</p>
           )}
           <button
             type="button"
@@ -147,7 +147,7 @@ export function TokenCard({ compact = false }: TokenCardProps) {
             disabled={loading}
             className="mt-1 text-sm font-medium text-primary transition-colors hover:text-primary-hover hover:underline disabled:opacity-50"
           >
-            {loading ? 'Refreshing…' : 'Refresh token'}
+            {loading ? 'Memuat ulang…' : 'Muat ulang token'}
           </button>
         </div>
       </div>
@@ -158,7 +158,7 @@ export function TokenCard({ compact = false }: TokenCardProps) {
     <div className="bg-surface rounded-surface border border-line p-6">
       {/* Header with status pill */}
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-ink">Token Status</h2>
+        <h2 className="text-lg font-semibold text-ink">Status Token</h2>
         <span
           className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold ${state.pillClass}`}
         >
@@ -172,8 +172,8 @@ export function TokenCard({ compact = false }: TokenCardProps) {
         <div className="mb-4 bg-warning-subtle border border-warning-border text-warning-strong px-4 py-3 rounded-control flex items-start">
           <IconAlertCircle size={16} className="mt-0.5 mr-2 shrink-0" />
           <span className="text-sm">
-            Unable to load token status. It may be offline — try refreshing
-            below.
+            Gagal memuat status token. Layanan mungkin sedang offline — coba muat
+            ulang di bawah.
           </span>
         </div>
       )}
@@ -197,26 +197,26 @@ export function TokenCard({ compact = false }: TokenCardProps) {
         <p className="text-sm text-ink-2">{state.message}</p>
 
         <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-ink-3">Token exists:</span>
+          <span className="text-sm font-medium text-ink-3">Token tersedia:</span>
           <span
             className={`text-sm font-medium ${
               status?.has_token ? 'text-ink' : 'text-ink-4'
             }`}
           >
-            {status?.has_token ? 'Yes' : 'No'}
+            {status?.has_token ? 'Ya' : 'Tidak'}
           </span>
         </div>
 
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium text-ink-3">Status:</span>
           <span className={`text-sm font-semibold ${state.textClass}`}>
-            {status?.is_valid ? 'Valid' : status?.has_token ? 'Expired' : 'None'}
+            {status?.is_valid ? 'Valid' : status?.has_token ? 'Kedaluwarsa' : 'Tidak ada'}
           </span>
         </div>
 
         {status?.expires_at && (
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-ink-3">Expires at:</span>
+            <span className="text-sm font-medium text-ink-3">Kedaluwarsa pada:</span>
             <span className="text-sm text-ink flex items-center">
               <IconClock size={14} className="mr-1.5 text-ink-4" />
               {formatDate(status.expires_at)}
@@ -232,7 +232,7 @@ export function TokenCard({ compact = false }: TokenCardProps) {
         className="w-full bg-primary text-white py-2.5 px-4 rounded-control hover:bg-primary-hover disabled:opacity-50 font-medium flex items-center justify-center gap-2"
       >
         <IconRefresh size={16} className={loading ? 'animate-spin' : ''} />
-        {loading ? 'Getting Token...' : 'Refresh Token'}
+        {loading ? 'Mengambil Token...' : 'Muat Ulang Token'}
       </button>
     </div>
   );

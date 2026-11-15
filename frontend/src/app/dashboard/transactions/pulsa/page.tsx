@@ -27,7 +27,7 @@ export default function BuyPulsaPage() {
       setMsisdn('');
       setDenom('');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Transaction failed');
+      setError(err instanceof Error ? err.message : 'Transaksi gagal');
     } finally {
       setLoading(false);
     }
@@ -37,9 +37,9 @@ export default function BuyPulsaPage() {
     <DashboardShell>
       <div>
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-ink">Buy Pulsa</h1>
+          <h1 className="text-2xl font-bold text-ink">Beli Pulsa</h1>
           <p className="mt-1 text-sm text-ink-3">
-            Reload pulsa via W2P API. Enter the destination number and denomination.
+            Isi ulang pulsa melalui W2P API. Masukkan nomor tujuan dan denominasi.
           </p>
         </div>
 
@@ -47,7 +47,7 @@ export default function BuyPulsaPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="msisdn" className="block text-sm font-medium text-ink-2">
-                MSISDN (Phone Number)
+                MSISDN (Nomor HP)
               </label>
               <input
                 id="msisdn"
@@ -62,7 +62,7 @@ export default function BuyPulsaPage() {
 
             <div>
               <label htmlFor="denom" className="block text-sm font-medium text-ink-2">
-                Denomination (IDR)
+                Denominasi (IDR)
               </label>
               <input
                 id="denom"
@@ -70,7 +70,7 @@ export default function BuyPulsaPage() {
                 value={denom}
                 onChange={(e) => setDenom(e.target.value)}
                 required
-                placeholder="e.g. 5000, 10000, 25000"
+                placeholder="mis. 5000, 10000, 25000"
                 className="mt-1 block w-full rounded-control border border-line-strong pl-3 pr-3 py-2 text-sm focus:border-primary focus:ring-primary"
               />
             </div>
@@ -80,7 +80,7 @@ export default function BuyPulsaPage() {
               disabled={loading}
               className="w-full bg-primary text-white py-2 px-4 rounded-control hover:bg-primary-hover disabled:opacity-50 font-medium"
             >
-              {loading ? 'Processing...' : 'Buy Pulsa'}
+              {loading ? 'Memproses...' : 'Beli Pulsa'}
             </button>
           </form>
 

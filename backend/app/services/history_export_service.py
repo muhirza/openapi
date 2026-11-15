@@ -18,17 +18,17 @@ from app.models.local_transaction import LocalTransaction
 MAX_EXPORT_ROWS = 20000
 
 COLUMNS = (
-    ("Date", 12),
-    ("Time", 10),
-    ("Type", 18),
-    ("Product", 34),
-    ("Destination", 18),
-    ("Amount", 16),
+    ("Tanggal", 12),
+    ("Waktu", 10),
+    ("Tipe", 18),
+    ("Produk", 34),
+    ("Tujuan", 18),
+    ("Nominal", 16),
     ("Status", 12),
-    ("Source", 10),
-    ("Provider Reference", 30),
-    ("Local Reference", 38),
-    ("Payment Method", 16),
+    ("Sumber", 10),
+    ("Referensi Penyedia", 30),
+    ("Referensi Lokal", 38),
+    ("Metode Pembayaran", 16),
 )
 
 
@@ -45,20 +45,20 @@ def export_filename(
 ) -> str:
     """Name the file after the applied date filter.
 
-    Both sides set  -> TransactionHistory_{start}_to_{end}.xlsx
-    Start only      -> TransactionHistory_from_{start}.xlsx
-    End only        -> TransactionHistory_until_{end}.xlsx
-    No date filter  -> TransactionHistory_{today}.xlsx
+    Both sides set  -> RiwayatTransaksi_{start}_sampai_{end}.xlsx
+    Start only      -> RiwayatTransaksi_dari_{start}.xlsx
+    End only        -> RiwayatTransaksi_hingga_{end}.xlsx
+    No date filter  -> RiwayatTransaksi_{today}.xlsx
     """
     if start_date and end_date:
-        suffix = f"{start_date}_to_{end_date}"
+        suffix = f"{start_date}_sampai_{end_date}"
     elif start_date:
-        suffix = f"from_{start_date}"
+        suffix = f"dari_{start_date}"
     elif end_date:
-        suffix = f"until_{end_date}"
+        suffix = f"hingga_{end_date}"
     else:
         suffix = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    return f"TransactionHistory_{suffix}.xlsx"
+    return f"RiwayatTransaksi_{suffix}.xlsx"
 
 
 async def export_transactions_xlsx(
@@ -79,7 +79,7 @@ async def export_transactions_xlsx(
     from openpyxl.styles import Font
 
     wb = Workbook(write_only=True)
-    ws = wb.create_sheet("Transactions")
+    ws = wb.create_sheet("Transaksi")
 
     header = []
     for name, _width in COLUMNS:

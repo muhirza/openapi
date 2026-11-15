@@ -27,14 +27,14 @@ class HistoryService:
         # Get token
         token_obj = await token_svc.get_valid_token(user_id)
         if not token_obj:
-            raise TokenFetchError("No valid provider token.")
+            raise TokenFetchError("Tidak ada token penyedia yang valid.")
         from app.core.security import decrypt_value
         token = decrypt_value(token_obj.access_token_encrypted)
 
         # Get credentials
         creds = await token_svc.get_credentials_by_name(user_id, cred_api_name)
         if not creds:
-            raise TokenFetchError(f"No credentials configured for {cred_api_name}.")
+            raise TokenFetchError(f"Belum ada kredensial yang dikonfigurasi untuk {cred_api_name}.")
         api_id, api_key = await token_svc.decrypt_credentials(creds)
 
         # Build date range

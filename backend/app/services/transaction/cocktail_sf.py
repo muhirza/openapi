@@ -65,6 +65,7 @@ class CocktailSFService(TransactionServiceBase):
             request_payload=request_payload,
             extra={
                 "product_code": product_code,
+                "brand": await self._resolve_product_brand(user_id, product_code),
                 "metadata": {"targets": targets},
             },
             endpoint=endpoint,

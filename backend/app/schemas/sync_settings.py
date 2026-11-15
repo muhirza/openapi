@@ -25,7 +25,7 @@ class SyncSettingsUpdate(BaseModel):
     @classmethod
     def _validate_interval(cls, value: Optional[int]) -> Optional[int]:
         if value is not None and value not in SYNC_INTERVALS:
-            raise ValueError(f"interval_minutes must be one of {list(SYNC_INTERVALS)}")
+            raise ValueError(f"interval_minutes harus salah satu dari {list(SYNC_INTERVALS)}")
         return value
 
 

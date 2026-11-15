@@ -43,17 +43,17 @@ export function TypePerformance({ types, loading }: TypePerformanceProps) {
     <div className="flex flex-wrap items-start justify-between gap-3">
       <div>
         <h2 className="text-sm font-semibold text-ink">
-          Transaction performance
+          Performa transaksi
         </h2>
         <p className="mt-1 text-xs text-ink-3">
-          Count, value, and brand mix per type
+          Jumlah, nilai, dan komposisi brand per tipe
         </p>
       </div>
 
       <div
         className="inline-flex gap-0.5 rounded-control border border-line p-0.5"
         role="group"
-        aria-label="Brand mix metric"
+        aria-label="Metrik komposisi brand"
       >
         {(['count', 'amount'] as const).map((option) => (
           <button
@@ -67,7 +67,7 @@ export function TypePerformance({ types, loading }: TypePerformanceProps) {
                 : 'text-ink-3 hover:bg-surface-muted hover:text-ink-2'
             }`}
           >
-            {option === 'count' ? 'Count' : 'Amount'}
+            {option === 'count' ? 'Jumlah' : 'Nominal'}
           </button>
         ))}
       </div>
@@ -80,8 +80,8 @@ export function TypePerformance({ types, loading }: TypePerformanceProps) {
         {header}
         <div className="mt-4 rounded-control border border-dashed border-line px-4 py-8 text-center text-sm text-ink-4">
           {types
-            ? 'No transaction activity in this range yet.'
-            : 'No transaction data available.'}
+            ? 'Belum ada aktivitas transaksi pada rentang ini.'
+            : 'Data transaksi tidak tersedia.'}
         </div>
       </DashboardCard>
     );
@@ -146,7 +146,7 @@ export function TypePerformance({ types, loading }: TypePerformanceProps) {
 
               <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-ink-3">
                 {visibleBrands.length === 0 ? (
-                  <span>No recorded amount</span>
+                  <span>Tidak ada nominal tercatat</span>
                 ) : (
                   visibleBrands.map((brand) => (
                     <span

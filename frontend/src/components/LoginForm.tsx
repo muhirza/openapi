@@ -25,7 +25,7 @@ export function LoginForm({ onLogin, mode }: LoginFormProps) {
     try {
       await onLogin(username, password);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
+      setError(err instanceof Error ? err.message : 'Gagal masuk');
       setLoading(false);
     }
   };
@@ -43,7 +43,7 @@ export function LoginForm({ onLogin, mode }: LoginFormProps) {
 
       <div>
         <label htmlFor="username" className="sr-only">
-          Username
+          Nama pengguna
         </label>
         <div className="relative">
           <span
@@ -62,7 +62,7 @@ export function LoginForm({ onLogin, mode }: LoginFormProps) {
             onChange={(e) => setUsername(e.target.value)}
             required
             autoComplete="username"
-            placeholder="Username"
+            placeholder="Nama pengguna"
             className={`${inputBase} pl-11 pr-4`}
           />
         </div>
@@ -70,7 +70,7 @@ export function LoginForm({ onLogin, mode }: LoginFormProps) {
 
       <div>
         <label htmlFor="password" className="sr-only">
-          Password
+          Kata sandi
         </label>
         <div className="relative">
           <span
@@ -89,13 +89,13 @@ export function LoginForm({ onLogin, mode }: LoginFormProps) {
             onChange={(e) => setPassword(e.target.value)}
             required
             autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
-            placeholder="Password"
+            placeholder="Kata sandi"
             className={`${inputBase} pl-11 pr-12`}
           />
           <button
             type="button"
             onClick={() => setShowPassword((s) => !s)}
-            aria-label={showPassword ? 'Hide password' : 'Show password'}
+            aria-label={showPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}
             aria-pressed={showPassword}
             className="absolute inset-y-0 right-1 flex cursor-pointer items-center rounded-surface px-2.5 text-ink-4 transition-colors duration-200 hover:text-ink-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
           >
@@ -132,11 +132,11 @@ export function LoginForm({ onLogin, mode }: LoginFormProps) {
         )}
         {loading
           ? mode === 'register'
-            ? 'Creating account...'
-            : 'Signing in...'
+            ? 'Membuat akun...'
+            : 'Sedang masuk...'
           : mode === 'register'
-            ? 'Get Started'
-            : 'Sign In'}
+            ? 'Mulai'
+            : 'Masuk'}
       </button>
     </form>
   );

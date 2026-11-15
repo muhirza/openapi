@@ -21,7 +21,7 @@ export default function CocktailSFPage() {
     setLoading(true);
 
     if (!productCode) {
-      setError('Please select a product');
+      setError('Pilih produk terlebih dahulu');
       setLoading(false);
       return;
     }
@@ -32,7 +32,7 @@ export default function CocktailSFPage() {
       .filter(Boolean);
 
     if (targets.length === 0) {
-      setError('Enter at least one target SN');
+      setError('Masukkan setidaknya satu SN tujuan');
       setLoading(false);
       return;
     }
@@ -46,7 +46,7 @@ export default function CocktailSFPage() {
       setProductCode('');
       setTargetsText('');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Transaction failed');
+      setError(err instanceof Error ? err.message : 'Transaksi gagal');
     } finally {
       setLoading(false);
     }
@@ -58,7 +58,7 @@ export default function CocktailSFPage() {
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-ink">Cocktail SF</h1>
           <p className="mt-1 text-sm text-ink-3">
-            Inject VD SF vouchers to one or more target SNs.
+            Injeksikan voucher VD SF ke satu atau beberapa SN tujuan.
           </p>
         </div>
 
@@ -66,7 +66,7 @@ export default function CocktailSFPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="product" className="block text-sm font-medium text-ink-2">
-                Product (search name, code, or brand)
+                Produk (cari nama, kode, atau brand)
               </label>
               <div className="mt-1">
                 <ProductSelect value={productCode} onChange={setProductCode} productType="VD Cocktail Plan" />
@@ -75,7 +75,7 @@ export default function CocktailSFPage() {
 
             <div>
               <label htmlFor="targets" className="block text-sm font-medium text-ink-2">
-                Target SNs (one per line or comma-separated)
+                SN tujuan (satu per baris atau dipisahkan koma)
               </label>
               <textarea
                 id="targets"
@@ -93,7 +93,7 @@ export default function CocktailSFPage() {
               disabled={loading}
               className="w-full bg-primary text-white py-2 px-4 rounded-control hover:bg-primary-hover disabled:opacity-50 font-medium"
             >
-              {loading ? 'Processing...' : 'Inject Cocktail SF'}
+              {loading ? 'Memproses...' : 'Injeksi Cocktail SF'}
             </button>
           </form>
 

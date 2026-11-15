@@ -10,23 +10,23 @@ export function StatusBadge({ status }: { status: string }) {
 
   // Normalize common provider statuses
   if (raw === 'success' || raw === 'sukses') {
-    label = 'Success';
+    label = 'Berhasil';
     cls = 'bg-success-subtle text-success-strong';
     dotCls = 'bg-success';
   } else if (raw === 'failed' || raw === 'error') {
-    label = 'Failed';
+    label = 'Gagal';
     cls = 'bg-danger-subtle text-danger-strong';
     dotCls = 'bg-danger';
   } else if (raw === 'processing') {
-    label = 'Processing';
+    label = 'Diproses';
     cls = 'bg-primary-subtle text-primary-hover';
     dotCls = 'bg-primary';
   } else if (raw === 'businesserror') {
-    label = 'Business Error';
+    label = 'Kesalahan Bisnis';
     cls = 'bg-warning-subtle text-warning-strong';
     dotCls = 'bg-warning';
   } else if (raw === 'systemerror') {
-    label = 'System Error';
+    label = 'Kesalahan Sistem';
     cls = 'bg-danger-subtle text-danger-strong';
     dotCls = 'bg-danger';
   } else if (raw === 'refund') {
@@ -34,15 +34,15 @@ export function StatusBadge({ status }: { status: string }) {
     cls = 'bg-line text-ink-2';
     dotCls = 'bg-ink-3';
   } else if (s === 'SUCCESS') {
-    label = 'Success';
+    label = 'Berhasil';
     cls = 'bg-success-subtle text-success-strong';
     dotCls = 'bg-success';
   } else if (s === 'FAILED') {
-    label = 'Failed';
+    label = 'Gagal';
     cls = 'bg-danger-subtle text-danger-strong';
     dotCls = 'bg-danger';
   } else if (s === 'PROCESSING') {
-    label = 'Processing';
+    label = 'Diproses';
     cls = 'bg-primary-subtle text-primary-hover';
     dotCls = 'bg-primary';
   } else if (s) {

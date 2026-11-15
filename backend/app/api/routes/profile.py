@@ -59,7 +59,7 @@ async def get_credential_status(
     db: AsyncSession = Depends(get_db),
 ):
     if api_name not in CREDENTIAL_API_NAMES:
-        raise HTTPException(status_code=404, detail="Unknown api_name")
+        raise HTTPException(status_code=404, detail="api_name tidak dikenal")
 
     result = await db.execute(
         select(ApiCredential).where(
@@ -84,7 +84,7 @@ async def save_credentials(
     db: AsyncSession = Depends(get_db),
 ):
     if api_name not in CREDENTIAL_API_NAMES:
-        raise HTTPException(status_code=400, detail="Invalid api_name")
+        raise HTTPException(status_code=400, detail="api_name tidak valid")
 
     existing = await db.execute(
         select(ApiCredential).where(

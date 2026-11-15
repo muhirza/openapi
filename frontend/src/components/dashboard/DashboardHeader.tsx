@@ -22,7 +22,7 @@ export function DashboardHeader({
       <div>
         <h1 className="text-2xl font-bold text-ink">Dashboard</h1>
         <p className="mt-1 text-sm text-ink-3">
-          Non-digital stock performance, balances, and recent activity.
+          Performa stok non-digital, saldo, dan aktivitas terbaru.
         </p>
       </div>
 
@@ -30,7 +30,7 @@ export function DashboardHeader({
         <div
           className="inline-flex shrink-0 gap-0.5 rounded-surface border border-line bg-surface p-1"
           role="group"
-          aria-label="Date range"
+          aria-label="Rentang tanggal"
         >
           {ANALYTICS_RANGES.map((option) => {
             const active = option.key === range;
@@ -59,7 +59,7 @@ export function DashboardHeader({
           className="inline-flex shrink-0 items-center gap-1.5 rounded-control border border-line bg-surface px-3 py-2 text-sm font-medium text-ink-2 transition-colors hover:bg-surface-muted disabled:opacity-50"
         >
           <IconRefresh size={14} className={refreshing ? 'animate-spin' : ''} />
-          Refresh
+          Muat ulang
         </button>
       </div>
     </div>

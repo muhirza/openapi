@@ -57,18 +57,18 @@ class StockService:
         ro_type: Optional[str] = None,
     ) -> StockListResponse:
         if family not in SUPPORTED_FAMILIES:
-            raise ValueError(f"Unsupported stock family: {family}")
+            raise ValueError(f"Keluarga stok tidak didukung: {family}")
 
         token_obj = await self.token_svc.get_valid_token(user_id)
         if not token_obj:
-            raise TokenFetchError("No valid provider token. Configure Get Token first.")
+            raise TokenFetchError("Tidak ada token penyedia yang valid. Konfigurasikan Get Token terlebih dahulu.")
         token = decrypt_value(token_obj.access_token_encrypted)
 
         creds = await self.token_svc.get_credentials_by_name(user_id, family)
         if not creds:
             raise TokenFetchError(
-                f"No credentials configured for the {family.upper()} API. "
-                "Add them in API Config."
+                f"Belum ada kredensial untuk API {family.upper()}. "
+                "Tambahkan di Konfigurasi API."
             )
         api_id, api_key = await self.token_svc.decrypt_credentials(creds)
 

@@ -39,11 +39,11 @@ function DeltaChip({ value, digits, compareLabel }: DeltaChipProps) {
       className={`mt-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold tabular-nums ${tone}`}
       aria-label={
         flat
-          ? `No change versus ${compareLabel}`
-          : `${positive ? 'Up' : 'Down'} ${formatNumber(
+          ? `Tidak ada perubahan dibanding ${compareLabel}`
+          : `${positive ? 'Naik' : 'Turun'} ${formatNumber(
               Math.abs(value),
               digits
-            )} per day versus ${compareLabel}`
+            )} per hari dibanding ${compareLabel}`
       }
     >
       {!flat && (
@@ -66,9 +66,9 @@ function DeltaChip({ value, digits, compareLabel }: DeltaChipProps) {
         </svg>
       )}
       {flat
-        ? 'No change'
+        ? 'Tidak berubah'
         : `${positive ? '+' : '−'}${formatNumber(Math.abs(value), digits)}`}
-      <span className="font-medium opacity-80">/day vs {compareLabel}</span>
+      <span className="font-medium opacity-80">/hari vs {compareLabel}</span>
     </span>
   );
 }
@@ -95,8 +95,8 @@ export function KpiGrid({ data, loading, error, onRetry }: KpiGridProps) {
     return (
       <DashboardCard>
         <DashboardEmptyState
-          title="Unable to load analytics"
-          description={error || 'The analytics service did not return a response.'}
+          title="Gagal memuat analitik"
+          description={error || 'Layanan analitik tidak mengembalikan respons.'}
           action={
             onRetry ? (
               <button
@@ -104,7 +104,7 @@ export function KpiGrid({ data, loading, error, onRetry }: KpiGridProps) {
                 onClick={onRetry}
                 className="mt-1 rounded-control bg-primary px-3 py-2 text-sm font-medium text-white hover:bg-primary-hover"
               >
-                Try again
+                Coba lagi
               </button>
             ) : undefined
           }
@@ -133,20 +133,20 @@ export function KpiGrid({ data, loading, error, onRetry }: KpiGridProps) {
       {error && (
         <div className="flex items-start gap-2 rounded-control border border-danger-border bg-danger-subtle px-3 py-2 text-sm text-danger-strong">
           <IconAlertCircle size={16} className="mt-0.5 shrink-0" />
-          <span>Could not refresh analytics. {error}</span>
+          <span>Gagal memuat ulang analitik. {error}</span>
         </div>
       )}
 
       {kpis.total === 0 && (
         <div className="rounded-surface border border-dashed border-line-strong bg-surface px-4 py-3 text-sm text-ink-3">
-          No non-digital transactions in this range yet. Try a wider range.
+          Belum ada transaksi non-digital pada rentang ini. Coba rentang yang lebih luas.
         </div>
       )}
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-6">
         <DashboardCard className="p-5 md:col-span-2 xl:col-span-2">
           <p className="text-sm font-medium text-ink-3">
-            MDA · Monthly daily average
+            MDA · Rata-rata harian bulanan
           </p>
 
           <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -154,7 +154,7 @@ export function KpiGrid({ data, loading, error, onRetry }: KpiGridProps) {
               <p className="text-2xl font-bold tabular-nums text-ink">
                 {formatNumber(current.transactions_per_day, 1)}
                 <span className="ml-1 text-sm font-medium text-ink-3">
-                  trx/day
+                  trx/hari
                 </span>
               </p>
               {trxDelta !== null && comparison && (
@@ -170,7 +170,7 @@ export function KpiGrid({ data, loading, error, onRetry }: KpiGridProps) {
               <p className="text-2xl font-bold tabular-nums text-ink">
                 {formatIDR(current.amount_per_day)}
                 <span className="ml-1 text-sm font-medium text-ink-3">
-                  /day
+                  /hari
                 </span>
               </p>
               {amountDelta !== null && comparison && (
@@ -186,16 +186,16 @@ export function KpiGrid({ data, loading, error, onRetry }: KpiGridProps) {
           <p className="mt-3 text-xs text-ink-4">
             {current.transaction_count === 0 ? (
               <>
-                No non-digital transactions in{' '}
-                {formatMonthShort(current.month)} yet.
+                Belum ada transaksi non-digital pada{' '}
+                {formatMonthShort(current.month)}.
               </>
             ) : (
               <>
                 <span className="text-ink-3">
-                  {formatNumber(current.transaction_count, 0)} transactions ·{' '}
+                  {formatNumber(current.transaction_count, 0)} transaksi ·{' '}
                   {formatIDR(current.transaction_amount)}
                 </span>{' '}
-                across {current.elapsed_days} elapsed days in{' '}
+                dalam {current.elapsed_days} hari berjalan pada{' '}
                 {formatMonthShort(current.month)}
               </>
             )}
@@ -203,7 +203,7 @@ export function KpiGrid({ data, loading, error, onRetry }: KpiGridProps) {
         </DashboardCard>
 
         <DashboardCard className="p-5">
-          <p className="text-sm font-medium text-ink-3">Success rate</p>
+          <p className="text-sm font-medium text-ink-3">Tingkat keberhasilan</p>
           <p className="mt-3 text-2xl font-bold tabular-nums text-ink">
             {formatRate(kpis.success_rate)}
           </p>
@@ -212,8 +212,8 @@ export function KpiGrid({ data, loading, error, onRetry }: KpiGridProps) {
             role="img"
             aria-label={
               terminal === 0
-                ? 'No completed transactions'
-                : `${kpis.success} successful and ${kpis.failed} failed`
+                ? 'Tidak ada transaksi selesai'
+                : `${kpis.success} berhasil dan ${kpis.failed} gagal`
             }
           >
             <span className="bg-success" style={{ width: `${successPct}%` }} />
@@ -221,20 +221,20 @@ export function KpiGrid({ data, loading, error, onRetry }: KpiGridProps) {
           </div>
           <p className="mt-2 text-xs text-ink-4">
             {terminal === 0 ? (
-              'No completed transactions yet.'
+              'Belum ada transaksi selesai.'
             ) : (
               <>
                 <strong className="font-medium text-ink-3">
-                  {kpis.success} of {terminal}
+                  {kpis.success} dari {terminal}
                 </strong>{' '}
-                transactions succeeded
+                transaksi berhasil
               </>
             )}
           </p>
         </DashboardCard>
 
         <DashboardCard className="p-5">
-          <p className="text-sm font-medium text-ink-3">Error rate</p>
+          <p className="text-sm font-medium text-ink-3">Tingkat kesalahan</p>
           <p className="mt-3 text-2xl font-bold tabular-nums text-ink">
             {formatRate(kpis.error_rate)}
           </p>
@@ -243,45 +243,45 @@ export function KpiGrid({ data, loading, error, onRetry }: KpiGridProps) {
             role="img"
             aria-label={
               terminal === 0
-                ? 'No completed transactions'
-                : `${kpis.failed} failed out of ${terminal} completed`
+                ? 'Tidak ada transaksi selesai'
+                : `${kpis.failed} gagal dari ${terminal} yang selesai`
             }
           >
             <span className="bg-danger" style={{ width: `${errorPct}%` }} />
           </div>
           <p className="mt-2 text-xs text-ink-4">
             <strong className="font-medium text-ink-3">
-              {kpis.failed} failed
+              {kpis.failed} gagal
             </strong>{' '}
-            · {kpis.processing} processing
+            · {kpis.processing} diproses
           </p>
         </DashboardCard>
 
         <DashboardCard className="p-5">
-          <p className="text-sm font-medium text-ink-3">Transaction amount</p>
+          <p className="text-sm font-medium text-ink-3">Nominal transaksi</p>
           <p className="mt-3 text-2xl font-bold tabular-nums text-ink">
             {formatIDR(kpis.transaction_amount)}
           </p>
           <p className="mt-2 text-xs text-ink-4">
             <strong className="font-medium text-ink-3">
-              {kpis.successful_with_amount} successful
+              {kpis.successful_with_amount} berhasil
             </strong>
             {kpis.average_successful_amount
-              ? ` · avg ${formatIDR(kpis.average_successful_amount)}`
+              ? ` · rata-rata ${formatIDR(kpis.average_successful_amount)}`
               : ''}
           </p>
         </DashboardCard>
 
         <DashboardCard className="p-5">
-          <p className="text-sm font-medium text-ink-3">Transactions</p>
+          <p className="text-sm font-medium text-ink-3">Transaksi</p>
           <p className="mt-3 text-2xl font-bold tabular-nums text-ink">
             {formatNumber(kpis.total, 0)}
           </p>
           <p className="mt-2 text-xs text-ink-4">
             <strong className="font-medium text-ink-3">
-              {formatNumber(kpis.transactions_per_day, 1)}/day
+              {formatNumber(kpis.transactions_per_day, 1)}/hari
             </strong>{' '}
-            over {range.elapsed_days} days
+            dalam {range.elapsed_days} hari
           </p>
         </DashboardCard>
       </div>

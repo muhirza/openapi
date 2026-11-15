@@ -83,7 +83,7 @@ class TokenService:
     async def fetch_new_token(self, user_id: int) -> Optional[ApiToken]:
         creds = await self.get_credentials(user_id)
         if not creds:
-            raise TokenFetchError("No credentials configured")
+            raise TokenFetchError("Belum ada kredensial yang dikonfigurasi")
 
         client_id = decrypt_value(creds.client_id_encrypted)
         client_secret = decrypt_value(creds.client_secret_encrypted)
@@ -101,10 +101,10 @@ class TokenService:
                 else:
                     resp = await client.get(url, params=data, headers=headers)
         except httpx.HTTPError as e:
-            raise TokenFetchError(f"Provider API error: {type(e).__name__}: {str(e)}")
+            raise TokenFetchError(f"Error API penyedia: {type(e).__name__}: {str(e)}")
 
         if resp.status_code != 200:
-            raise TokenFetchError(f"Provider returned status {resp.status_code}: {resp.text}")
+            raise TokenFetchError(f"Penyedia mengembalikan status {resp.status_code}: {resp.text}")
 
         token_data = resp.json()
         access_token = token_data.get("access_token")

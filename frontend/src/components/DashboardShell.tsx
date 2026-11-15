@@ -15,7 +15,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
   if (status !== 'authenticated' || !username) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center text-ink-3">Loading...</div>
+        <div className="text-center text-ink-3">Memuat...</div>
       </div>
     );
   }

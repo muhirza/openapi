@@ -4,10 +4,10 @@ export const ANALYTICS_RANGES: ReadonlyArray<{
   key: AnalyticsRange;
   label: string;
 }> = [
-  { key: '7d', label: '7 days' },
-  { key: '30d', label: '30 days' },
-  { key: '90d', label: '90 days' },
-  { key: 'month', label: 'This month' },
+  { key: '7d', label: '7 hari' },
+  { key: '30d', label: '30 hari' },
+  { key: '90d', label: '90 hari' },
+  { key: 'month', label: 'Bulan ini' },
 ];
 
 export const TRANSACTION_TYPE_ORDER = [
@@ -18,14 +18,15 @@ export const TRANSACTION_TYPE_ORDER = [
 ] as const;
 
 export const TRANSACTION_TYPE_LABELS: Record<string, string> = {
-  buy_pulsa: 'Buy Pulsa',
-  buy_data_package: 'Data Package',
-  package_injection: 'Package Injection',
+  buy_pulsa: 'Beli Pulsa',
+  buy_data_package: 'Paket Data',
+  package_injection: 'Injeksi Paket',
   cocktail_sf: 'Cocktail SF',
 };
 
 const BRAND_COLORS: Record<string, string> = {
   SF: '#1D4ED8',
+  SMARTFREN: '#1D4ED8',
   XL: '#0EA5E9',
   AXIS: '#94A3B8',
   Unknown: '#CBD5E1',

@@ -7,8 +7,8 @@ import { StockFamily, StockTransactionInfoResponse } from '../../../../types';
 import { StatusBadge } from '../../../../components/StatusBadge';
 
 const OPERATIONS = [
-  { value: 'SELLVOUCHER', label: 'Inject SP' },
-  { value: 'PHYSICALVOUCHER', label: 'Inject Voucher' },
+  { value: 'SELLVOUCHER', label: 'Injeksi SP' },
+  { value: 'PHYSICALVOUCHER', label: 'Injeksi Voucher' },
 ];
 
 export default function StockTransactionInfoPage() {
@@ -29,7 +29,7 @@ export default function StockTransactionInfoPage() {
     try {
       setResult(await api.lookupStockTransactionInfo(family, servicetype, id));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Lookup failed');
+      setError(err instanceof Error ? err.message : 'Pencarian gagal');
     } finally {
       setLoading(false);
     }
@@ -41,10 +41,10 @@ export default function StockTransactionInfoPage() {
     <DashboardShell>
       <div className="max-w-4xl">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-ink">Transaction Info</h1>
+          <h1 className="text-2xl font-bold text-ink">Info Transaksi</h1>
           <p className="mt-1 text-sm text-ink-3">
-            Look up AWG / XWG stock transaction status by masterTrxId — including transactions
-            performed outside this dashboard.
+            Cek status transaksi stok AWG / XWG berdasarkan masterTrxId — termasuk transaksi
+            yang dilakukan di luar dashboard ini.
           </p>
         </div>
 
@@ -54,11 +54,11 @@ export default function StockTransactionInfoPage() {
         >
           <div className="flex flex-wrap items-end gap-4">
             <div>
-              <label className="mb-1 block text-xs text-ink-3">Family</label>
+              <label className="mb-1 block text-xs text-ink-3">Keluarga</label>
               <div
                 className="inline-flex rounded-control border border-line-strong p-0.5 text-sm"
                 role="group"
-                aria-label="Stock family"
+                aria-label="Keluarga stok"
               >
                 {(['xwg', 'awg'] as const).map((value) => (
                   <button
@@ -78,7 +78,7 @@ export default function StockTransactionInfoPage() {
 
             <div>
               <label htmlFor="operation" className="mb-1 block text-xs text-ink-3">
-                Operation
+                Operasi
               </label>
               <select
                 id="operation"
@@ -103,7 +103,7 @@ export default function StockTransactionInfoPage() {
                 type="text"
                 value={masterTrxId}
                 onChange={(e) => setMasterTrxId(e.target.value)}
-                placeholder="e.g. TEMBAK101162221212132411526"
+                placeholder="mis. TEMBAK101162221212132411526"
                 autoComplete="off"
                 className="block w-full rounded-control border border-line-strong px-3 py-2 font-mono text-sm focus:border-primary focus:ring-primary"
               />
@@ -114,13 +114,13 @@ export default function StockTransactionInfoPage() {
               disabled={loading || !masterTrxId.trim()}
               className="rounded-control bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Searching…' : 'Search'}
+              {loading ? 'Mencari…' : 'Cari'}
             </button>
           </div>
           <p className="text-xs text-ink-4">
-            Read-only lookup against the provider&apos;s Info Transaction Detail API. Nothing is
-            saved to history. Use the same operation that produced the transaction (Inject SP or
-            Inject Voucher).
+            Pencarian hanya-baca ke API Info Transaction Detail milik penyedia. Tidak ada yang
+            disimpan ke riwayat. Gunakan operasi yang sama dengan yang menghasilkan transaksi (Injeksi SP atau
+            Injeksi Voucher).
           </p>
         </form>
 
@@ -134,7 +134,7 @@ export default function StockTransactionInfoPage() {
           <div className="rounded-surface border border-line bg-surface p-6">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
               <div className="min-w-0">
-                <h2 className="text-sm font-semibold text-ink">Result</h2>
+                <h2 className="text-sm font-semibold text-ink">Hasil</h2>
                 <p className="mt-0.5 break-all font-mono text-xs text-ink-3">
                   {result.master_trx_id}
                 </p>
@@ -147,7 +147,7 @@ export default function StockTransactionInfoPage() {
                   <StatusBadge status={result.status} />
                 ) : (
                   <span className="rounded-full bg-line px-2.5 py-0.5 text-xs font-medium text-ink-3">
-                    No result
+                    Tidak ada hasil
                   </span>
                 )}
               </div>
@@ -155,17 +155,17 @@ export default function StockTransactionInfoPage() {
 
             {rows.length === 0 ? (
               <div className="rounded-control border border-warning-border bg-warning-subtle px-4 py-3 text-sm text-warning-strong">
-                No detail rows found for this masterTrxId with the selected operation. Verify the
-                family and operation, or the transaction may not be processed yet.
+                Tidak ada baris detail untuk masterTrxId ini dengan operasi yang dipilih. Periksa
+                keluarga dan operasi, atau transaksi mungkin belum diproses.
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="text-left text-2xs font-semibold uppercase tracking-wider text-ink-3">
-                      <th className="pb-2 pr-4">Target MSISDN</th>
+                      <th className="pb-2 pr-4">MSISDN Tujuan</th>
                       <th className="pb-2 pr-4">Status</th>
-                      <th className="pb-2">Status Detail</th>
+                      <th className="pb-2">Detail Status</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-line">
@@ -192,7 +192,7 @@ export default function StockTransactionInfoPage() {
             {result.raw_response && (
               <details className="mt-4 border-t border-line pt-4">
                 <summary className="cursor-pointer text-sm font-medium text-ink">
-                  Raw provider response
+                  Respons mentah penyedia
                 </summary>
                 <pre className="mt-2 max-h-64 overflow-auto rounded-control bg-canvas p-3 text-xs">
                   {JSON.stringify(result.raw_response, null, 2)}
