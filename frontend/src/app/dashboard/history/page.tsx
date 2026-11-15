@@ -10,10 +10,10 @@ import { formatIDR, formatDate, formatDateOnly, formatTime, formatRelative } fro
 import Link from 'next/link';
 
 const TYPE_LABELS: Record<string, string> = {
-  buy_pulsa: 'Beli Pulsa',
+  buy_pulsa: 'Pulsa',
   buy_data_package: 'Paket Data',
-  cocktail_sf: 'Cocktail SF',
-  package_injection: 'Injeksi Paket',
+  cocktail_sf: 'Cocktail PV SF',
+  package_injection: 'Cocktail SP',
   inject_awg: 'Injeksi AWG',
   inject_xwg: 'Injeksi XWG',
 };
@@ -377,10 +377,10 @@ export default function LocalHistoryPage() {
               className="w-44 rounded-control border border-line-strong px-3 py-2 text-sm focus:border-primary focus:ring-primary"
             >
               <option value="">Semua Tipe</option>
-              <option value="buy_pulsa">Beli Pulsa</option>
+              <option value="buy_pulsa">Pulsa</option>
               <option value="buy_data_package">Beli Paket Data</option>
-              <option value="cocktail_sf">Cocktail SF</option>
-              <option value="package_injection">Injeksi Paket</option>
+              <option value="cocktail_sf">Cocktail PV SF</option>
+              <option value="package_injection">Cocktail SP</option>
             </select>
             <select
               value={filterSource}

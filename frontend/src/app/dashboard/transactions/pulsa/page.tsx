@@ -37,7 +37,7 @@ export default function BuyPulsaPage() {
     <DashboardShell>
       <div>
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-ink">Beli Pulsa</h1>
+          <h1 className="text-2xl font-bold text-ink">Pulsa</h1>
           <p className="mt-1 text-sm text-ink-3">
             Isi ulang pulsa melalui W2P API. Masukkan nomor tujuan dan denominasi.
           </p>
@@ -80,7 +80,7 @@ export default function BuyPulsaPage() {
               disabled={loading}
               className="w-full bg-primary text-white py-2 px-4 rounded-control hover:bg-primary-hover disabled:opacity-50 font-medium"
             >
-              {loading ? 'Memproses...' : 'Beli Pulsa'}
+              {loading ? 'Memproses...' : 'Pulsa'}
             </button>
           </form>
 

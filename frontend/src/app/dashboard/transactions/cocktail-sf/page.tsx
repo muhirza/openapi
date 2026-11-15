@@ -56,7 +56,7 @@ export default function CocktailSFPage() {
     <DashboardShell>
       <div>
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-ink">Cocktail SF</h1>
+          <h1 className="text-2xl font-bold text-ink">Cocktail PV SF</h1>
           <p className="mt-1 text-sm text-ink-3">
             Injeksikan voucher VD SF ke satu atau beberapa SN tujuan.
           </p>
@@ -93,7 +93,7 @@ export default function CocktailSFPage() {
               disabled={loading}
               className="w-full bg-primary text-white py-2 px-4 rounded-control hover:bg-primary-hover disabled:opacity-50 font-medium"
             >
-              {loading ? 'Memproses...' : 'Injeksi Cocktail SF'}
+              {loading ? 'Memproses...' : 'Injeksi Cocktail PV SF'}
             </button>
           </form>
 
