@@ -18,10 +18,10 @@ export const TRANSACTION_TYPE_ORDER = [
 ] as const;
 
 export const TRANSACTION_TYPE_LABELS: Record<string, string> = {
-  buy_pulsa: 'Beli Pulsa',
+  buy_pulsa: 'Pulsa',
   buy_data_package: 'Paket Data',
-  package_injection: 'Injeksi Paket',
-  cocktail_sf: 'Cocktail SF',
+  package_injection: 'Cocktail SP',
+  cocktail_sf: 'Cocktail PV SF',
 };
 
 const BRAND_COLORS: Record<string, string> = {

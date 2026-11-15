@@ -43,7 +43,7 @@ export default function PackageInjectionPage() {
     <DashboardShell>
       <div>
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-ink">Injeksi Paket</h1>
+          <h1 className="text-2xl font-bold text-ink">Cocktail SP</h1>
           <p className="mt-1 text-sm text-ink-3">
             Injeksikan paket ke nomor tujuan. Status akan diverifikasi
             otomatis setelah dikirim.
@@ -81,7 +81,7 @@ export default function PackageInjectionPage() {
               disabled={loading}
               className="w-full bg-primary text-white py-2 px-4 rounded-control hover:bg-primary-hover disabled:opacity-50 font-medium"
             >
-              {loading ? 'Memproses...' : 'Injeksi Paket'}
+              {loading ? 'Memproses...' : 'Cocktail SP'}
             </button>
           </form>
 

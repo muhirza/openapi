@@ -40,10 +40,10 @@ const NAV_GROUPS: Array<{ title: string; links: NavLink[] }> = [
   {
     title: 'TRANSAKSI',
     links: [
-      { href: '/dashboard/transactions/pulsa', label: 'Beli Pulsa', icon: <IconSmartphone /> },
+      { href: '/dashboard/transactions/pulsa', label: 'Pulsa', icon: <IconSmartphone /> },
       { href: '/dashboard/transactions/data-package', label: 'Paket Data', icon: <IconPackage /> },
-      { href: '/dashboard/transactions/cocktail-sf', label: 'Cocktail SF', icon: <IconZap /> },
-      { href: '/dashboard/transactions/package-injection', label: 'Injeksi Paket', icon: <IconDownload /> },
+      { href: '/dashboard/transactions/cocktail-sf', label: 'Cocktail PV SF', icon: <IconZap /> },
+      { href: '/dashboard/transactions/package-injection', label: 'Cocktail SP', icon: <IconDownload /> },
     ],
   },
   {

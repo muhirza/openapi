@@ -8,10 +8,10 @@ import { StatusBadge } from './StatusBadge';
 import Link from 'next/link';
 
 const TYPE_LABELS: Record<string, string> = {
-  buy_pulsa: 'Beli Pulsa',
+  buy_pulsa: 'Pulsa',
   buy_data_package: 'Paket Data',
-  cocktail_sf: 'Cocktail SF',
-  package_injection: 'Injeksi Paket',
+  cocktail_sf: 'Cocktail PV SF',
+  package_injection: 'Cocktail SP',
   inject_awg: 'Injeksi AWG',
   inject_xwg: 'Injeksi XWG',
 };
